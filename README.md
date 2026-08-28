@@ -13,10 +13,10 @@ a bytecode compiler and stack-based virtual machine.
 
 ## Current status
 
-Phase 0, task 0.2 (variables/arithmetic) just went green — `make p0-02`
-passes. Tasks 0.3 through 0.10 are still untouched stubs. ROADMAP.md and all
-phase docs (00–07) are fully written; only the Phase 0 exercises are actually
-in progress.
+Phase 0, task 0.5 (pointers) is in progress. Tasks 0.2 through 0.4
+(variables/arithmetic, control flow, arrays) are green. Tasks 0.6 through
+0.10 are still untouched stubs. ROADMAP.md and all phase docs (00–07) are
+fully written; only the Phase 0 exercises are actually in progress.
 
 ## The one ground rule
 

@@ -11,6 +11,13 @@ a bytecode compiler and stack-based virtual machine.
 > rename the language, redesign its syntax, and add features that are yours.
 > This repo is a vehicle for learning, not a language you have to keep as-is.
 
+## Current status
+
+Phase 0, task 0.2 (variables/arithmetic) just went green — `make p0-02`
+passes. Tasks 0.3 through 0.10 are still untouched stubs. ROADMAP.md and all
+phase docs (00–07) are fully written; only the Phase 0 exercises are actually
+in progress.
+
 ## The one ground rule
 
 **You write every line of implementation code yourself.** No AI-generated

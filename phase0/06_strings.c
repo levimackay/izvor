@@ -6,16 +6,25 @@
 /* Copy src (including its '\0') into dst. Assume dst is big enough.
  * The classic idiom is a loop copying until you've copied the terminator. */
 void my_strcpy(char *dst, const char *src) {
-    (void)dst; (void)src;
-    /* TODO */
+    int i = 0;
+
+    while (src[i] != '\0'){
+        dst[i] = src[i];
+        i++;
+    }
+    dst[i] = '\0';
 }
 
 /* Compare like the real strcmp: walk both strings together; at the first
  * position where they differ (or one ends), return negative if a < b,
  * 0 if equal, positive if a > b (comparing the chars as numbers). */
 int my_strcmp(const char *a, const char *b) {
-    (void)a; (void)b;
-    return 0; /* TODO */
+    int i = 0;
+    
+    while (a[i] != '\0' && a[i] == b[i]) {
+        i++;
+    }
+    return a[i] - b[i];
 }
 
 /* Parse the leading decimal digits of s into a number:

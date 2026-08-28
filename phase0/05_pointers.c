@@ -36,7 +36,7 @@ int *larger(int *a, int *b) {
  * a + i is the address of element i, so *(a + i) is element i.
  * (a[i] is literally defined as *(a + i) — same thing, nicer clothes.) */
 void add_to_all(int *a, int count, int n) {
-    while (count<n){
-        
+    for (int i = 0; i < count; i++) {
+        a[i] += n;
     }
 }

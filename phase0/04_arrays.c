@@ -27,12 +27,22 @@ int max_in_array(const int *a, int n) {
  * (Your whole language's source code will be one of these strings, and
  * the lexer is just a careful walk like this one.) */
 int my_strlen(const char *s) {
-    (void)s;
-    return 0; /* TODO */
+    int i = 0;
+    while (s[i] != '\0'){
+        i++;
+    }
+    return i;
 }
 
 /* How many times does character c appear in s? */
 int count_char(const char *s, char c) {
-    (void)s; (void)c;
-    return 0; /* TODO */
+    int count = 0;
+    int i = 0;
+
+    while (s[i] != '\0'){
+        if (s[i] == c) count++;
+        i++;
+    }
+
+    return count;
 }

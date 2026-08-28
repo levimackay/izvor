@@ -9,29 +9,34 @@
  * This is WHY pointers exist: without them a function can only touch
  * copies of its arguments. */
 void swap(int *a, int *b) {
-    (void)a; (void)b;
-    /* TODO */
+    int temp = *a;
+    *a = *b;
+    *b = temp;
 }
 
 /* Write a + b into the location out points at.
  * This "out-parameter" pattern is everywhere in C — it's how a function
  * returns a second result. */
 void store_sum(int a, int b, int *out) {
-    (void)a; (void)b; (void)out;
-    /* TODO */
+    *out = a + b;
 }
 
 /* Return whichever pointer points at the larger value (either on a tie).
  * Note: you return the POINTER, not the value. */
 int *larger(int *a, int *b) {
-    (void)a; (void)b;
-    return 0; /* TODO */
+    if (*a < *b) {
+        return b;
+    } else {
+        return a;
+    }
+
 }
 
 /* Add n to every element of the array through pointer arithmetic:
  * a + i is the address of element i, so *(a + i) is element i.
  * (a[i] is literally defined as *(a + i) — same thing, nicer clothes.) */
 void add_to_all(int *a, int count, int n) {
-    (void)a; (void)count; (void)n;
-    /* TODO */
+    while (count<n){
+        
+    }
 }

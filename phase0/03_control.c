@@ -26,13 +26,22 @@ long factorial(int n) {
  * while b isn't 0, replace (a, b) with (b, a % b); answer is a.
  * Assume a, b >= 0, not both zero. */
 int gcd(int a, int b) {
-    (void)a; (void)b;
-    return 0; /* TODO */
+    while (b != 0){
+        int temp = a;
+        a = b;
+        b = temp % b;
+    }
+    return a;
 }
 
 /* How many decimal digits does n have? count_digits(0) is 1. Assume n >= 0.
  * (A lexer asks a cousin of this question: "how long is this number token?") */
 int count_digits(int n) {
-    (void)n;
-    return 0; /* TODO */
+    int count = 0;
+    if (n == 0) return 1;
+    while (n != 0){
+        n = n / 10;
+        count++;
+    }
+    return count;
 }

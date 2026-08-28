@@ -1,0 +1,56 @@
+/* Phase 1 — lexer implementation. All TODOs are yours.
+ * Doc: docs/phases/01-lexer.md
+ */
+#include "lexer.h"
+
+/* ------------------------------------------------------------------ */
+/* Suggested private helpers (task 1.2). `static` means "visible only  */
+/* inside this file" — the C version of private.                       */
+/*                                                                     */
+/*   static char peek(const Lexer *lx);    what is the next char?      */
+/*                                         ('\0' at end of source)     */
+/*   static char advance(Lexer *lx);       consume + return next char  */
+/*                                                                     */
+/* Everything below is built from these two. In task 1.3 you'll likely */
+/* add:                                                                */
+/*                                                                     */
+/*   static int is_digit(char c);                                      */
+/*   static void skip_whitespace(Lexer *lx);   spaces, tabs, newlines  */
+/*                                                                     */
+/* And a constructor helper saves a lot of typing:                     */
+/*                                                                     */
+/*   static Token make_token(const Lexer *lx, TokenType type,          */
+/*                           int start_pos);                           */
+/* ------------------------------------------------------------------ */
+
+/* Task 1.1 — a switch over every TokenType.
+ * Tip: leave out the `default:` case. With -Wall, clang then WARNS you
+ * whenever a future TokenType is missing from the switch — the compiler
+ * becomes your checklist. */
+const char *token_type_name(TokenType type) {
+    (void)type;
+    return "?"; /* TODO */
+}
+
+/* Task 1.2 */
+void lexer_init(Lexer *lx, const char *src) {
+    (void)lx; (void)src;
+    /* TODO */
+}
+
+/* Tasks 1.2–1.4 — the heart of the lexer.
+ * Shape:
+ *   1. skip whitespace                       (task 1.3)
+ *   2. remember where this token starts
+ *   3. if at '\0': return an EOF token WITHOUT advancing past the
+ *      terminator (that's what makes repeated calls keep saying EOF)
+ *   4. if it's a digit: consume the whole run of digits, computing the
+ *      value as you go (your parse_uint from task 0.6)   (task 1.3)
+ *   5. otherwise switch on the character: + - * / ( )    (task 1.2)
+ *   6. anything else: TOK_ERROR covering that character  (task 1.4)
+ */
+Token lexer_next(Lexer *lx) {
+    (void)lx;
+    Token t = {TOK_ERROR, 0, 0, 0};
+    return t; /* TODO */
+}

@@ -7,14 +7,20 @@
  * arrives as a POINTER to its first element, and the length must travel
  * separately — the array itself doesn't know how long it is. */
 int sum_array(const int *a, int n) {
-    (void)a; (void)n;
-    return 0; /* TODO */
+    int total = 0;
+    for (int i = 0; i < n; i++){
+        total += a[i];
+    }
+    return total;
 }
 
 /* Largest of the first n elements. Assume n >= 1. */
 int max_in_array(const int *a, int n) {
-    (void)a; (void)n;
-    return 0; /* TODO */
+    int m = a[0];
+    for (int i = 1; i < n; i++) {
+        if (a[i] > m) m = a[i];
+    }
+    return m;
 }
 
 /* Length of C string s: count characters until the '\0' terminator.

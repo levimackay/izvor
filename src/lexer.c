@@ -1,3 +1,7 @@
+/* Lexer implementation: scans characters into tokens.
+   Handles integer literals, + - * / and parentheses; anything
+   else becomes TOK_ERROR rather than aborting the scan. */
+
 #include <ctype.h>
 #include "lexer.h"
 

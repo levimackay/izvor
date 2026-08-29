@@ -1,3 +1,7 @@
+/* lexdump: command-line tool that prints the token stream for
+   the expression given as its argument. Development aid, not
+   part of the compiler. */
+
 #include <stdio.h>
 #include "lexer.h"
 

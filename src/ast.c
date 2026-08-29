@@ -1,3 +1,6 @@
+/* AST implementation: heap-allocated node constructors and the
+   recursive tree destructor. */
+
 #include <stdlib.h>
 #include "ast.h"
 

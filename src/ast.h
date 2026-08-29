@@ -1,3 +1,7 @@
+/* Abstract syntax tree: node representation and constructors.
+   A Node is a tagged union; always check node->type before
+   reading anything under node->as. */
+
 #ifndef IZVOR_AST_H
 #define IZVOR_AST_H
 

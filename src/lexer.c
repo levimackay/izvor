@@ -28,8 +28,26 @@
  * whenever a future TokenType is missing from the switch — the compiler
  * becomes your checklist. */
 const char *token_type_name(TokenType type) {
-    (void)type;
-    return "?"; /* TODO */
+    switch (type){
+    case TOK_NUMBER:
+        return "NUMBER";
+    case TOK_PLUS:
+        return "PLUS";
+    case TOK_MINUS:
+        return "MINUS";
+    case TOK_STAR:
+        return "STAR";
+    case TOK_SLASH:
+        return "SLASH";
+    case TOK_LPAREN:
+        return "LPAREN";
+    case TOK_RPAREN:
+        return "RPAREN";
+    case TOK_EOF:
+        return "EOF";
+    case TOK_ERROR:
+        return "ERROR";
+}
 }
 
 /* Task 1.2 */

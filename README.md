@@ -29,6 +29,3 @@ make clean      # delete build artifacts
 ## License
 
 MIT — see [LICENSE](LICENSE).
-
-**Last updated:** 2026-08-29 11:47 PDT
-

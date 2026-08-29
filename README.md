@@ -1,9 +1,9 @@
-# tinylang
+# izvor
 
-A small programming language, implemented from scratch in C: a lexer, a
+A programming language, implemented from scratch in C: a lexer, a
 recursive-descent parser, a tree-walking interpreter, then a bytecode
-compiler and stack-based VM. "tinylang" is a placeholder name — the syntax
-gets redesigned once the mechanics are solid.
+compiler and stack-based VM. *Izvor* is Serbian/Croatian for "source" or
+"spring" — source files use the `.iz` extension.
 
 ## Status
 

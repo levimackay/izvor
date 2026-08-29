@@ -1,4 +1,4 @@
-# tinylang Makefile — plain clang, no dependencies.
+# izvor Makefile — plain clang, no dependencies.
 #
 #   make p1-1 .. p1-4    build + run a lexer test
 #   make lexdump         build the token-dump CLI

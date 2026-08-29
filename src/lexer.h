@@ -1,5 +1,5 @@
-#ifndef TINYLANG_LEXER_H
-#define TINYLANG_LEXER_H
+#ifndef IZVOR_LEXER_H
+#define IZVOR_LEXER_H
 
 typedef enum {
     TOK_NUMBER,

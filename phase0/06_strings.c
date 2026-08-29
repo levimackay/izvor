@@ -35,13 +35,34 @@ int my_strcmp(const char *a, const char *b) {
  *
  * This function IS a piece of your Phase 1 lexer. */
 long parse_uint(const char *s) {
-    (void)s;
-    return 0; /* TODO */
+    int i = 0;
+    long value = 0;
+
+    while (s[i] != '\0' && s[i] >= '0' && s[i] <= '9'){
+        value = value *10+(s[i]-'0');
+        i++;
+    }
+    return value;
 }
 
 /* Reverse s in place (first char swaps with last, and so on inward).
  * Two pointers walking toward each other is the classic shape. */
 void reverse_in_place(char *s) {
-    (void)s;
-    /* TODO */
+    int count = 0;
+
+    while (s[count] != '\0'){
+        count++;
+    }
+
+    int left = 0;
+    int right = count -1;
+
+    while (left < right){
+        char temp = s[left];
+        s[left] = s[right];
+        s[right] = temp;
+        left++;
+        right--;
+    }
+    
 }

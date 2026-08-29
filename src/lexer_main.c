@@ -1,8 +1,3 @@
-/* Task 1.5 — lexdump: print the token stream for an expression.
- *
- *   make lexdump
- *   ./build/lexdump "12 + 3*(40-5)"
- */
 #include <stdio.h>
 #include "lexer.h"
 

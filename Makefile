@@ -1,6 +1,7 @@
 # izvor Makefile — plain clang, no dependencies.
 #
 #   make p1-1 .. p1-4    build + run a lexer test
+#   make p2-1            build + run an AST test
 #   make lexdump         build the token-dump CLI
 #   make clean           remove build artifacts
 #
@@ -17,6 +18,10 @@ BUILD  := build
 
 p1-%: | $(BUILD)
 	$(CC) $(CFLAGS) src/lexer.c tests/test_lexer_$*.c -o $(BUILD)/$@
+	./$(BUILD)/$@
+
+p2-%: | $(BUILD)
+	$(CC) $(CFLAGS) src/ast.c tests/test_ast_$*.c -o $(BUILD)/$@
 	./$(BUILD)/$@
 
 lexdump: | $(BUILD)

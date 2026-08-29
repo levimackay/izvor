@@ -1,6 +1,7 @@
 /* Phase 1 — lexer implementation. All TODOs are yours.
  * Doc: docs/phases/01-lexer.md
  */
+#include <ctype.h>
 #include "lexer.h"
 
 /* ------------------------------------------------------------------ */
@@ -47,7 +48,8 @@ const char *token_type_name(TokenType type) {
         return "EOF";
     case TOK_ERROR:
         return "ERROR";
-}
+    }
+    return "???";   /* unreachable for a valid TokenType */
 }
 
 void lexer_init(Lexer *lx, const char *src) {
@@ -72,6 +74,12 @@ static Token make_token(const Lexer *lx, TokenType type, int start_pos) {
     return t;
 }
 
+static int is_digit(char c) { return c >= '0' && c <= '9'; }
+
+static void skip_whitespace(Lexer *lx) {
+    while (isspace((unsigned char)peek(lx))) advance(lx);
+}
+
 /* Tasks 1.2–1.4 — the heart of the lexer.
  * Shape:
  *   1. skip whitespace                       (task 1.3)
@@ -84,7 +92,29 @@ static Token make_token(const Lexer *lx, TokenType type, int start_pos) {
  *   6. anything else: TOK_ERROR covering that character  (task 1.4)
  */
 Token lexer_next(Lexer *lx) {
-    (void)lx;
-    Token t = {TOK_ERROR, 0, 0, 0};
-    return t; /* TODO */
+    skip_whitespace(lx);
+
+    int start = lx->pos;
+    char c = peek(lx);
+
+    if (c == '\0') return make_token(lx, TOK_EOF, start);
+
+    if (is_digit(c)) {
+        long value = 0;
+        while (is_digit(peek(lx))) value = value * 10 + (advance(lx) - '0');
+        Token t = make_token(lx, TOK_NUMBER, start);
+        t.value = value;
+        return t;
+    }
+
+    advance(lx);
+    switch (c) {
+        case '+': return make_token(lx, TOK_PLUS,   start);
+        case '-': return make_token(lx, TOK_MINUS,  start);
+        case '*': return make_token(lx, TOK_STAR,   start);
+        case '/': return make_token(lx, TOK_SLASH,  start);
+        case '(': return make_token(lx, TOK_LPAREN, start);
+        case ')': return make_token(lx, TOK_RPAREN, start);
+    }
+    return make_token(lx, TOK_ERROR, start);
 }

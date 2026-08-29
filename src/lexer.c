@@ -50,10 +50,26 @@ const char *token_type_name(TokenType type) {
 }
 }
 
-/* Task 1.2 */
 void lexer_init(Lexer *lx, const char *src) {
-    (void)lx; (void)src;
-    /* TODO */
+    lx->src = src;
+    lx->pos = 0;
+}
+
+static char peek(const Lexer *lx) {
+    return lx->src[lx->pos];
+}
+
+static char advance(Lexer *lx) {
+    return lx->src[lx->pos++];
+}
+
+static Token make_token(const Lexer *lx, TokenType type, int start_pos) {
+    Token t;
+    t.type = type;
+    t.start = lx->src + start_pos;
+    t.length = lx->pos - start_pos;
+    t.value = 0;
+    return t;
 }
 
 /* Tasks 1.2–1.4 — the heart of the lexer.

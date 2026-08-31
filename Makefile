@@ -27,6 +27,9 @@ p2-%: | $(BUILD)
 lexdump: | $(BUILD)
 	$(CC) $(CFLAGS) src/lexer.c src/lexer_main.c -o $(BUILD)/lexdump
 
+izvor: | $(BUILD)
+	$(CC) $(CFLAGS) src/lexer.c src/ast.c src/parser.c src/main.c -o $(BUILD)/izvor
+
 $(BUILD):
 	mkdir -p $(BUILD)
 

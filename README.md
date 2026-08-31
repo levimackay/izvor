@@ -8,8 +8,10 @@ compiler and stack-based VM. *Izvor* is Serbian/Croatian for "source" or
 ## Status
 
 The lexer is done and tested. It scans integer literals, `+ - * /`, and
-parentheses, and returns an error token on anything else. The parser,
-interpreter, compiler, and VM don't exist yet.
+parentheses, and returns an error token on anything else. The AST node types
+(`ast.c` / `ast.h`) exist too: numbers, unary ops, binary ops, with
+constructors and a recursive free. There's no parser wired up to build them
+yet, and the interpreter, compiler, and VM don't exist.
 
 ```
 $ make lexdump && ./build/lexdump "12 + 3 * (40 - 5)"
@@ -25,7 +27,7 @@ RPAREN   ')'
 EOF
 ```
 
-Next up is the recursive-descent parser, turning that token stream into an AST.
+Next up is the recursive-descent parser, turning that token stream into the AST nodes above.
 
 ## Build and run
 

@@ -3,40 +3,40 @@
 A programming language, implemented from scratch in C: a lexer, a
 recursive-descent parser, a tree-walking interpreter, then a bytecode
 compiler and stack-based VM. *Izvor* is Serbian/Croatian for "source" or
-"spring" — source files use the `.iz` extension.
+"spring", and source files use the `.iz` extension.
 
 ## Status
 
-The lexer is done and tested. It scans integer literals, `+ - * /`, and
-parentheses, and returns an error token on anything else. The AST node types
-(`ast.c` / `ast.h`) exist too: numbers, unary ops, binary ops, with
-constructors and a recursive free. There's no parser wired up to build them
-yet, and the interpreter, compiler, and VM don't exist.
+The pipeline now runs end to end for arithmetic. The lexer scans integer
+literals, `+ - * /`, and parentheses. The parser is classic recursive
+descent, one function per precedence level (expression, term, factor),
+and builds a heap-allocated AST with number, unary, and binary nodes.
+A small CLI ties it together: parse one expression, print the tree in
+S-expression form, evaluate it with a tree walk.
 
 ```
-$ make lexdump && ./build/lexdump "12 + 3 * (40 - 5)"
-NUMBER   '12'   value=12
-PLUS     '+'
-NUMBER   '3'   value=3
-STAR     '*'
-LPAREN   '('
-NUMBER   '40'   value=40
-MINUS    '-'
-NUMBER   '5'   value=5
-RPAREN   ')'
-EOF
+$ make izvor && ./build/izvor "12 + 3 * (40 - 5)"
+(+ 12 (* 3 (- 40 5)))
+= 117
 ```
 
-Next up is the recursive-descent parser, turning that token stream into the AST nodes above.
+Parse errors report the character offset, what was expected, and what
+was actually there. The whole input has to parse, so trailing garbage is
+rejected instead of ignored. Division by zero is caught at evaluation
+time rather than left as undefined behavior.
+
+Not built yet: statements (`let`, `print`), variables, types, and
+everything past expressions. Parser tests are the next task, then the
+language starts growing.
 
 ## Build and run
 
 Everything builds with `clang` via the Makefile, no dependencies.
 
 ```sh
-make p1-1       # build + run lexer test 1
-make p1-4       # ... test 4
+make izvor      # build the expression CLI
 make lexdump    # build the token-dump CLI
+make p1-1       # build + run lexer test 1 (through p1-4)
 make clean      # delete build artifacts
 ```
 
@@ -44,9 +44,9 @@ All four lexer tests pass.
 
 ## Layout
 
-- `src/` — the language implementation
-- `tests/` — hand-rolled tests, plain `main()` + `assert()`, no framework
+- `src/` holds the language implementation
+- `tests/` holds hand-rolled tests, plain `main()` + `assert()`, no framework
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).

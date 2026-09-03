@@ -21,7 +21,7 @@ p1-%: | $(BUILD)
 	./$(BUILD)/$@
 
 p2-%: | $(BUILD)
-	$(CC) $(CFLAGS) src/ast.c tests/test_ast_$*.c -o $(BUILD)/$@
+	$(CC) $(CFLAGS) src/lexer.c src/ast.c src/parser.c tests/test_parser_$*.c -o $(BUILD)/$@
 	./$(BUILD)/$@
 
 lexdump: | $(BUILD)

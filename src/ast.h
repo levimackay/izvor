@@ -2,13 +2,6 @@
    A Node is a tagged union; always check node->type before
    reading anything under node->as. */
 
-
-
-
-
-
-   
-
 // If not defined, define it
 #ifndef IZVOR_AST_H
 #define IZVOR_AST_H

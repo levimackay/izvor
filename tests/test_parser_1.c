@@ -3,37 +3,23 @@
    NUMBER, then check(PLUS) false, match(NUMBER) true,
    now current is PLUS, ... down to EOF */
 
-/* ── STEP 0: includes ─────────────────────────────────────────────────
-   Three #include lines go here, above main. Copy the shape from the top
-   of tests/test_lexer_4.c.
-     - the standard header that provides assert()
-     - the standard header that provides printf()
-     - the parser's own header. It is NOT in this folder, so the path has
-       to climb out of tests/ and back down into src/. test_lexer_4.c
-       shows you that path style already.
-   Why parser.h and not lexer.h + ast.h too? Open src/parser.h and look
-   at what it includes. You get those two for free.
-   ──────────────────────────────────────────────────────────────────── */
-
+#include <assert.h>
+#include <stdio.h>
+#include "../src/parser.h"
 
 int main(void){
 
-   /* ── STEP 1: set up ───────────────────────────────────────────────
-      Declare one variable of type Parser. Call it p. Do not use a
-      pointer, just a plain struct sitting on the stack, the same way
-      test_lexer_4.c declares `Lexer lx;`.
+   Parser p;
 
-      Then call parser_init on it with the source string "1+2".
-      Check the signature in src/parser.h: the first argument is a
-      Parser*, so you have to pass the ADDRESS of p, not p itself.
-      The & operator does that.
-
-      Now assert that p.current.type is TOK_NUMBER.
-      Why should it already be a number before you've advanced anything?
-      Read parser_init in src/parser.c — its last line answers that.
-      Note the dot, not an arrow: p is a struct, not a pointer.
-      ─────────────────────────────────────────────────────────────── */
-
+   parser_init(&p, "1+2");
+   assert(p.current.type == TOK_NUMBER);
+   assert(parser_check(&p, TOK_PLUS) == false);
+   // Check asks without consuming. In order for it to work, you need to call it twice.
+   // Could be fixed with a more complex parser
+   // This duplicate is deliberate
+   assert(parser_check(&p, TOK_NUMBER) == true);
+   assert(parser_check(&p, TOK_NUMBER) == true);
+   
 
    /* ── STEP 2: check() answers correctly ────────────────────────────
       assert that parser_check(&p, TOK_PLUS) is false.

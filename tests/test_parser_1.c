@@ -14,12 +14,11 @@ int main(void){
    parser_init(&p, "1+2");
    assert(p.current.type == TOK_NUMBER);
    assert(parser_check(&p, TOK_PLUS) == false);
-   // Check asks without consuming. In order for it to work, you need to call it twice.
-   // Could be fixed with a more complex parser
    // This duplicate is deliberate
    assert(parser_check(&p, TOK_NUMBER) == true);
    assert(parser_check(&p, TOK_NUMBER) == true);
-   
-   // Rest of tests will go here
+   assert(p.current.value == 1);
+   assert(parser_check(&p, TOK_NUMBER) == true);
+
    
 }

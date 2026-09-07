@@ -1,0 +1,2125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+html, body { margin:0; padding:0; background:#0a0b0d; overflow:hidden; }
+* { box-sizing:border-box; }
+a { color:oklch(0.80 0.10 190); text-decoration:none; }
+a:hover { color:oklch(0.88 0.10 190); }
+input, textarea, button { font-family:inherit; }
+input:focus, textarea:focus, button:focus { outline:none; }
+::-webkit-scrollbar { width:10px; height:10px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#262c32; border-radius:6px; border:3px solid transparent; background-clip:content-box; }
+::-webkit-scrollbar-thumb:hover { background:#39424a; background-clip:content-box; }
+@keyframes vblink { 0%,49% { opacity:1 } 50%,100% { opacity:0 } }
+@keyframes vfade { from { opacity:0 } to { opacity:1 } }
+@keyframes vpop { from { opacity:0; transform:translateY(6px) scale(0.985) } to { opacity:1; transform:none } }
+@keyframes vslide { from { opacity:0; transform:translateY(4px) } to { opacity:1; transform:none } }
+@keyframes vpulse { 0%,100% { opacity:0.35 } 50% { opacity:1 } }
+@keyframes vsweep { from { transform:translateX(-100%) } to { transform:translateX(300%) } }
+</style>
+</helmet>
+
+<div style="position:relative; width:100vw; height:100vh; display:flex; flex-direction:column; background:#0a0b0d; color:#e6e9ec; font-family:'IBM Plex Sans',system-ui,sans-serif; font-size:13px; -webkit-font-smoothing:antialiased; overflow:hidden;">
+
+  <div style="height:38px; flex:none; display:flex; align-items:center; gap:14px; padding:0 12px; background:#101215; border-bottom:1px solid #1b2024;">
+    <div style="display:flex; gap:8px; align-items:center; padding-right:4px;">
+      <div style="width:11px; height:11px; border-radius:50%; background:#3c4249;"></div>
+      <div style="width:11px; height:11px; border-radius:50%; background:#3c4249;"></div>
+      <div style="width:11px; height:11px; border-radius:50%; background:#3c4249;"></div>
+    </div>
+    <div onClick="{{ goWelcome }}" style="display:flex; align-items:center; gap:9px; cursor:pointer; padding:3px 6px; border-radius:5px;" style-hover="background:#171b1f">
+      <div style="width:16px; height:16px; border-radius:4px; background:linear-gradient(160deg, oklch(0.82 0.11 190), oklch(0.62 0.12 230)); display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; color:#06131a;">I</div>
+      <span style="font-weight:600; letter-spacing:0.02em;">Izvor Studio</span>
+    </div>
+    <div style="width:1px; height:16px; background:#23292e;"></div>
+    <div style="{{ titlePathStyle }}">
+      <span style="color:#d7dce0;">izvor-server</span>
+      <span style="color:#4c545b;">/</span>
+      <span>{{ activeFile }}</span>
+    </div>
+
+    <div style="flex:1;"></div>
+
+    <div style="display:flex; align-items:center; gap:2px; padding:2px; background:#0c0e10; border:1px solid #21262b; border-radius:7px;">
+      <div onClick="{{ onRun }}" title="Run  ⌘R" style="{{ runBtnStyle }}">
+        <span style="font-size:9px;">▶</span><span>Run</span>
+      </div>
+      <div onClick="{{ onDebug }}" title="Debug  ⌘⇧D" style="{{ debugBtnStyle }}">
+        <span style="font-size:10px;">◈</span><span>Debug</span>
+      </div>
+      <div onClick="{{ onStop }}" title="Stop" style="{{ stopBtnStyle }}">
+        <span style="font-size:9px;">■</span>
+      </div>
+    </div>
+
+    <div onClick="{{ onBuild }}" title="Build  ⌘⇧B" style="{{ buildBtnStyle }}">
+      <span style="font-size:10px;">⚙</span><span>{{ buildLabel }}</span>
+    </div>
+
+    <div style="{{ titleTargetStyle }}">
+      <span style="color:#d7dce0;">{{ target }}</span>
+      <span style="color:#4c545b;">·</span>
+      <span>release</span>
+    </div>
+
+    <div style="width:1px; height:16px; background:#23292e;"></div>
+
+    <div style="display:flex; gap:2px;">
+      <div onClick="{{ toggleSidebar }}" title="Toggle Explorer  ⌘B" style="{{ tgSidebar }}">▤</div>
+      <div onClick="{{ toggleTerm }}" title="Toggle Terminal  ⌘J" style="{{ tgTerm }}">▭</div>
+      <div onClick="{{ toggleAi }}" title="Toggle Izvor AI  ⌘I" style="{{ tgAi }}">◧</div>
+      <div onClick="{{ openPalette }}" title="Command Palette  ⌘K" style="{{ tgPalette }}">⌘</div>
+    </div>
+  </div>
+
+  <div style="flex:1; display:flex; min-height:0;">
+
+    <div style="width:46px; flex:none; background:#0c0e11; border-right:1px solid #1b2024; display:flex; flex-direction:column; align-items:center; padding:8px 0; gap:4px; position:relative; z-index:20;">
+      <sc-for list="{{ activity }}" as="a" hint-placeholder-count="5">
+        <div onClick="{{ a.click }}" onMouseEnter="{{ a.enter }}" onMouseLeave="{{ a.leave }}" style="{{ a.style }}">
+          <div style="{{ a.bar }}"></div>
+          <span style="font-size:15px; line-height:1;">{{ a.icon }}</span>
+          <sc-if value="{{ a.badge }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute; top:5px; right:5px; min-width:14px; height:14px; padding:0 3px; border-radius:7px; background:oklch(0.62 0.17 25); color:#fff; font-size:9px; font-weight:600; display:flex; align-items:center; justify-content:center;">{{ a.badgeCount }}</div>
+          </sc-if>
+          <sc-if value="{{ a.hover }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute; left:44px; top:8px; padding:5px 9px; background:#1a1f24; border:1px solid #2b3238; border-radius:6px; white-space:nowrap; font-size:11.5px; color:#e6e9ec; box-shadow:0 8px 24px rgba(0,0,0,0.5); animation:vfade 0.12s ease both; z-index:40;">
+              {{ a.label }}<span style="color:#6b747c; margin-left:8px; font-family:'JetBrains Mono',monospace;">{{ a.key }}</span>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+      <div style="flex:1;"></div>
+      <div onClick="{{ openSettings }}" title="Settings" style="width:32px; height:32px; border-radius:7px; display:flex; align-items:center; justify-content:center; color:#7d868e; cursor:pointer; font-size:15px;" style-hover="background:#161a1e; color:#e6e9ec">◍</div>
+    </div>
+
+    <sc-if value="{{ sidebarOpen }}" hint-placeholder-val="{{ true }}">
+      <div style="{{ sidebarStyle }}">
+        <div style="height:32px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:0 8px 0 12px; border-bottom:1px solid #191d21;">
+          <span style="font-size:10.5px; font-weight:600; letter-spacing:0.10em; color:#8b949c; text-transform:uppercase;">{{ sidebarTitle }}</span>
+          <div style="display:flex; gap:1px;">
+            <sc-if value="{{ sbExplorer }}" hint-placeholder-val="{{ true }}">
+              <div onClick="{{ newFile }}" title="New File" style="width:22px; height:22px; border-radius:5px; display:flex; align-items:center; justify-content:center; color:#8b949c; cursor:pointer; font-size:13px;" style-hover="background:#1a1f23; color:#e6e9ec">＋</div>
+            </sc-if>
+            <div onClick="{{ toggleSidebar }}" title="Hide" style="width:22px; height:22px; border-radius:5px; display:flex; align-items:center; justify-content:center; color:#8b949c; cursor:pointer; font-size:12px;" style-hover="background:#1a1f23; color:#e6e9ec">⤫</div>
+          </div>
+        </div>
+
+        <sc-if value="{{ sbExplorer }}" hint-placeholder-val="{{ true }}">
+          <div style="flex:1; display:flex; flex-direction:column; min-height:0;">
+            <div style="padding:8px 10px 6px;">
+              <input value="{{ filter }}" onChange="{{ onFilter }}" placeholder="Filter files" style="width:100%; height:26px; background:#0c0e10; border:1px solid #23282d; border-radius:6px; color:#e6e9ec; font-size:12px; padding:0 9px;" style-focus="border-color:oklch(0.55 0.08 195)" />
+            </div>
+            <div style="flex:1; overflow:auto; padding:2px 6px 12px;">
+              <sc-for list="{{ tree }}" as="n" hint-placeholder-count="10">
+                <div onClick="{{ n.click }}" onContextMenu="{{ n.menu }}" style="{{ n.style }}">
+                  <span style="{{ n.chevStyle }}">{{ n.chev }}</span>
+                  <span style="{{ n.iconStyle }}">{{ n.icon }}</span>
+                  <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ n.name }}</span>
+                  <span style="{{ n.gitStyle }}">{{ n.git }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ sbSearch }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1; display:flex; flex-direction:column; min-height:0;">
+            <div style="padding:8px 10px; display:flex; flex-direction:column; gap:6px;">
+              <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Search project" style="width:100%; height:28px; background:#0c0e10; border:1px solid #23282d; border-radius:6px; color:#e6e9ec; font-family:'JetBrains Mono',monospace; font-size:12px; padding:0 9px;" style-focus="border-color:oklch(0.55 0.08 195)" />
+              <div style="display:flex; gap:6px; font-size:11px; color:#7d868e;">
+                <span style="padding:2px 6px; border:1px solid #23282d; border-radius:4px; font-family:'JetBrains Mono',monospace;">Aa</span>
+                <span style="padding:2px 6px; border:1px solid #23282d; border-radius:4px; font-family:'JetBrains Mono',monospace;">.*</span>
+                <div style="flex:1;"></div>
+                <span>{{ searchSummary }}</span>
+              </div>
+            </div>
+            <div style="flex:1; overflow:auto; padding:0 6px 12px;">
+              <sc-for list="{{ results }}" as="g" hint-placeholder-count="3">
+                <div style="margin-bottom:8px;">
+                  <div style="display:flex; align-items:center; gap:7px; padding:4px 6px; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#c6ccd2;">
+                    <span style="color:oklch(0.78 0.09 190);">◆</span>{{ g.file }}
+                    <span style="color:#5e666d;">{{ g.count }}</span>
+                  </div>
+                  <sc-for list="{{ g.hits }}" as="h" hint-placeholder-count="2">
+                    <div onClick="{{ h.click }}" style="display:flex; gap:9px; padding:3px 8px 3px 20px; border-radius:5px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#9aa3ab;" style-hover="background:#181c20; color:#e6e9ec">
+                      <span style="color:#5e666d; min-width:22px; text-align:right;">{{ h.num }}</span>
+                      <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ h.text }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ sbGit }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1; overflow:auto; padding:10px;">
+            <div style="display:flex; align-items:center; gap:8px; padding:6px 8px; background:#0f1215; border:1px solid #21262b; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:11.5px;">
+              <span style="color:oklch(0.78 0.09 190);">⑂</span><span style="color:#e6e9ec;">main</span>
+              <div style="flex:1;"></div>
+              <span style="color:#6b747c;">↑1 ↓0</span>
+            </div>
+            <textarea value="{{ gitMsg }}" onChange="{{ onGitMsg }}" placeholder="Commit message…" style="width:100%; height:62px; margin-top:10px; resize:none; background:#0c0e10; border:1px solid #23282d; border-radius:6px; color:#e6e9ec; font-size:12px; padding:8px 9px; line-height:1.5;" style-focus="border-color:oklch(0.55 0.08 195)"></textarea>
+            <div onClick="{{ onCommit }}" style="{{ commitBtnStyle }}">Commit</div>
+            <div style="margin-top:16px; font-size:10.5px; font-weight:600; letter-spacing:0.10em; color:#8b949c; padding:0 2px 6px;">CHANGES <span style="color:#5e666d;">{{ changeCount }}</span></div>
+            <sc-for list="{{ changes }}" as="c" hint-placeholder-count="3">
+              <div onClick="{{ c.click }}" style="display:flex; align-items:center; gap:9px; padding:5px 8px; border-radius:5px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:12px; color:#c6ccd2;" style-hover="background:#181c20">
+                <span style="{{ c.tagStyle }}">{{ c.tag }}</span>
+                <span style="flex:1;">{{ c.name }}</span>
+                <span style="color:#5e666d; font-size:11px;">{{ c.stat }}</span>
+              </div>
+            </sc-for>
+            <div style="margin-top:18px; padding:10px; border:1px dashed #23282b; border-radius:7px; font-size:11.5px; color:#7d868e; line-height:1.6;">
+              Working tree has {{ changeCount }} staged changes. Last commit <span style="font-family:'JetBrains Mono',monospace; color:#c6ccd2;">a91f0c4</span> — “borrow-check the connection pool”.
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ sbDebug }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1; overflow:auto; padding:10px 10px 20px;">
+            <div style="display:flex; gap:6px;">
+              <div onClick="{{ onRun }}" style="flex:1; height:28px; display:flex; align-items:center; justify-content:center; gap:6px; background:#0f1215; border:1px solid #21262b; border-radius:6px; cursor:pointer; font-size:12px; font-weight:500;" style-hover="background:#161b1f; border-color:#2c333a">▶ Run</div>
+              <div onClick="{{ onDebug }}" style="flex:1; height:28px; display:flex; align-items:center; justify-content:center; gap:6px; background:#0f1215; border:1px solid #21262b; border-radius:6px; cursor:pointer; font-size:12px; font-weight:500;" style-hover="background:#161b1f; border-color:#2c333a">◈ Debug</div>
+              <div onClick="{{ onStop }}" style="width:32px; height:28px; display:flex; align-items:center; justify-content:center; background:#0f1215; border:1px solid #21262b; border-radius:6px; cursor:pointer; font-size:10px; color:#c6ccd2;" style-hover="background:#161b1f">■</div>
+            </div>
+            <div style="{{ debugStateStyle }}">{{ debugStateText }}</div>
+            <sc-for list="{{ debugSections }}" as="s" hint-placeholder-count="5">
+              <div style="margin-top:14px;">
+                <div onClick="{{ s.toggle }}" style="display:flex; align-items:center; gap:6px; cursor:pointer; padding:3px 2px; font-size:10.5px; font-weight:600; letter-spacing:0.10em; color:#8b949c;">
+                  <span style="{{ s.chevStyle }}">▸</span>{{ s.title }}
+                  <span style="color:#5e666d; letter-spacing:0;">{{ s.meta }}</span>
+                </div>
+                <sc-if value="{{ s.open }}" hint-placeholder-val="{{ true }}">
+                  <div style="padding:3px 0 0;">
+                    <sc-for list="{{ s.rows }}" as="r" hint-placeholder-count="3">
+                      <div onClick="{{ r.click }}" style="{{ r.style }}">
+                        <span style="{{ r.dotStyle }}">{{ r.dot }}</span>
+                        <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ r.label }}</span>
+                        <span style="color:#6b747c; font-size:11px;">{{ r.meta }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ sbExt }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1; overflow:auto; padding:8px 10px 20px;">
+            <input placeholder="Search extensions" style="width:100%; height:26px; background:#0c0e10; border:1px solid #23282d; border-radius:6px; color:#e6e9ec; font-size:12px; padding:0 9px; margin-bottom:10px;" style-focus="border-color:oklch(0.55 0.08 195)" />
+            <div style="font-size:10.5px; font-weight:600; letter-spacing:0.10em; color:#8b949c; padding:4px 2px;">INSTALLED</div>
+            <sc-for list="{{ installedExts }}" as="e" hint-placeholder-count="3">
+              <div onClick="{{ openExtensions }}" style="display:flex; align-items:center; gap:9px; padding:7px 6px; border-radius:6px; cursor:pointer;" style-hover="background:#181c20">
+                <div style="{{ e.iconStyle }}">{{ e.mark }}</div>
+                <div style="flex:1; min-width:0;">
+                  <div style="font-size:12px; color:#e6e9ec;">{{ e.name }}</div>
+                  <div style="font-size:11px; color:#6b747c; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ e.publisher }}</div>
+                </div>
+                <span style="color:oklch(0.76 0.13 155); font-size:11px;">✓</span>
+              </div>
+            </sc-for>
+            <div onClick="{{ openExtensions }}" style="margin-top:12px; height:28px; display:flex; align-items:center; justify-content:center; background:#0f1215; border:1px solid #21262b; border-radius:6px; cursor:pointer; font-size:12px;" style-hover="background:#161b1f">Browse marketplace</div>
+          </div>
+        </sc-if>
+      </div>
+      <div onMouseDown="{{ dragSidebar }}" style="width:4px; flex:none; cursor:col-resize; background:transparent; margin-left:-2px; z-index:15;" style-hover="background:oklch(0.55 0.09 195)"></div>
+    </sc-if>
+
+    <div style="flex:1; min-width:0; display:flex; flex-direction:column; background:#0a0b0d;">
+
+      <div style="height:35px; flex:none; display:flex; align-items:stretch; background:#0d0f11; border-bottom:1px solid #1b2024;">
+        <div style="flex:1; min-width:0; display:flex; align-items:stretch; overflow-x:auto; overflow-y:hidden;">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+            <div onClick="{{ t.click }}" style="{{ t.style }}">
+              <span style="{{ t.iconStyle }}">◆</span>
+              <span style="{{ t.labelStyle }}">{{ t.name }}</span>
+              <sc-if value="{{ t.dirty }}" hint-placeholder-val="{{ false }}">
+                <span style="width:6px; height:6px; border-radius:50%; background:oklch(0.80 0.12 80);"></span>
+              </sc-if>
+              <sc-if value="{{ t.clean }}" hint-placeholder-val="{{ true }}">
+                <span onClick="{{ t.close }}" style="width:16px; height:16px; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#6b747c; font-size:11px;" style-hover="background:#23292e; color:#e6e9ec">⤫</span>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex; align-items:center; gap:2px; padding:0 8px; border-left:1px solid #1b2024;">
+          <div onClick="{{ splitEditor }}" title="Split Editor" style="width:24px; height:24px; border-radius:5px; display:flex; align-items:center; justify-content:center; color:#7d868e; cursor:pointer; font-size:12px;" style-hover="background:#181c20; color:#e6e9ec">◫</div>
+          <div onClick="{{ openPalette }}" title="More Actions" style="width:24px; height:24px; border-radius:5px; display:flex; align-items:center; justify-content:center; color:#7d868e; cursor:pointer; font-size:13px;" style-hover="background:#181c20; color:#e6e9ec">⋯</div>
+        </div>
+      </div>
+
+      <div style="height:27px; flex:none; display:flex; align-items:center; gap:7px; padding:0 14px; min-width:0; overflow:hidden; border-bottom:1px solid #15191c; font-size:11.5px; color:#7d868e; font-family:'JetBrains Mono',monospace;">
+        <sc-for list="{{ crumbs }}" as="c" hint-placeholder-count="4">
+          <span style="{{ c.style }}">{{ c.label }}</span>
+        </sc-for>
+        <div style="flex:1;"></div>
+        <sc-if value="{{ hasDiag }}" hint-placeholder-val="{{ true }}">
+          <span onClick="{{ openProblems }}" style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:2px 7px; border-radius:5px;" style-hover="background:#181c20">
+            <span style="color:oklch(0.66 0.16 25);">⊗ {{ errCount }}</span>
+            <span style="color:oklch(0.80 0.12 80);">⚠ {{ warnCount }}</span>
+          </span>
+        </sc-if>
+      </div>
+
+      <div style="flex:1; display:flex; min-height:0; position:relative;">
+
+        <sc-if value="{{ viewEditor }}" hint-placeholder-val="{{ true }}">
+          <div style="flex:1; display:flex; min-width:0; position:relative; background:#0a0b0d;">
+            <div ref="{{ codeRef }}" style="flex:1; overflow:auto; position:relative; min-width:0;">
+              <div style="padding:10px 0 45vh 0; position:relative; font-family:'JetBrains Mono',monospace; font-size:13px; min-height:100%;">
+                <sc-for list="{{ lines }}" as="ln" hint-placeholder-count="26">
+                  <div onClick="{{ ln.click }}" onMouseEnter="{{ ln.enter }}" onMouseLeave="{{ ln.leave }}" style="{{ ln.row }}">
+                    <div style="{{ ln.numStyle }}">{{ ln.num }}</div>
+                    <div onClick="{{ ln.fold }}" style="{{ ln.foldStyle }}">{{ ln.foldIcon }}</div>
+                    <div style="flex:1; white-space:pre; padding-right:24px; position:relative;">{{ ln.content }}<sc-if value="{{ ln.cursor }}" hint-placeholder-val="{{ false }}"><span style="display:inline-block; width:1.6px; height:15px; margin:0 -1px; vertical-align:-3px; background:oklch(0.88 0.11 190); animation:vblink 1.05s steps(1) infinite;"></span></sc-if><sc-if value="{{ ln.hasDiag }}" hint-placeholder-val="{{ false }}"><span style="{{ ln.diagStyle }}">{{ ln.diagText }}</span></sc-if></div>
+                  </div>
+                </sc-for>
+
+                <sc-if value="{{ acOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="{{ acStyle }}">
+                    <div style="max-height:184px; overflow:auto; padding:4px;">
+                      <sc-for list="{{ acItems }}" as="i" hint-placeholder-count="4">
+                        <div onClick="{{ i.click }}" onMouseEnter="{{ i.enter }}" style="{{ i.style }}">
+                          <span style="{{ i.kindStyle }}">{{ i.kind }}</span>
+                          <span style="flex:none; color:#e6e9ec;">{{ i.label }}</span>
+                          <span style="flex:1; color:#6b747c; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ i.detail }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                    <div style="border-top:1px solid #23282d; padding:8px 10px; font-family:'IBM Plex Sans',sans-serif; font-size:11.5px; color:#8b949c; line-height:1.55; background:#0e1114;">{{ acDoc }}</div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ hoverOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="{{ hoverStyle }}">
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#e6e9ec; line-height:1.6;">{{ hoverSig }}</div>
+                    <div style="height:1px; background:#23282d; margin:8px 0;"></div>
+                    <div style="font-size:11.5px; color:#8b949c; line-height:1.6;">{{ hoverDoc }}</div>
+                    <sc-if value="{{ hoverHasDiag }}" hint-placeholder-val="{{ false }}">
+                      <div style="{{ hoverDiagStyle }}">{{ hoverDiagText }}</div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+
+            <sc-if value="{{ minimapOn }}" hint-placeholder-val="{{ true }}">
+              <div style="width:66px; flex:none; background:#0b0d0f; border-left:1px solid #15191c; padding:10px 8px; overflow:hidden; position:relative;">
+                <sc-for list="{{ minimap }}" as="m" hint-placeholder-count="30">
+                  <div style="{{ m.style }}"></div>
+                </sc-for>
+                <div style="{{ minimapViewport }}"></div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ viewCompiler }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1; display:flex; flex-direction:column; min-width:0; background:#0a0b0d; animation:vfade 0.16s ease both;">
+            <div style="height:52px; flex:none; display:flex; align-items:center; gap:14px; padding:0 18px; border-bottom:1px solid #15191c; overflow:hidden;">
+              <div style="min-width:0; overflow:hidden;">
+                <div style="font-size:13.5px; font-weight:600; letter-spacing:0.01em;">Compiler</div>
+                <div style="font-size:11px; color:#6b747c; font-family:'JetBrains Mono',monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">izvor-server · release · {{ target }}</div>
+              </div>
+              <div style="flex:1; min-width:8px;"></div>
+              <div style="display:flex; align-items:baseline; gap:7px; flex:none; font-family:'JetBrains Mono',monospace;">
+                <span style="font-size:20px; color:#e6e9ec; letter-spacing:-0.01em;">{{ buildTime }}</span>
+                <span style="font-size:11px; color:#6b747c;">total</span>
+              </div>
+              <div onClick="{{ onBuild }}" style="{{ bigBuildStyle }}">{{ buildLabel }}</div>
+            </div>
+            <div style="{{ compilerBodyStyle }}">
+              <div style="{{ compilerRailStyle }}">
+                <sc-for list="{{ pipeline }}" as="s" hint-placeholder-count="9">
+                  <div>
+                    <div onClick="{{ s.click }}" style="{{ s.style }}">
+                      <div style="{{ s.dotStyle }}">{{ s.dot }}</div>
+                      <span style="{{ s.nameStyle }}">{{ s.name }}</span>
+                      <div style="flex:1;"></div>
+                      <span style="{{ s.msStyle }}">{{ s.ms }}</span>
+                    </div>
+                    <sc-if value="{{ s.connector }}" hint-placeholder-val="{{ true }}">
+                      <div style="{{ s.connStyle }}"></div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="flex:1; min-width:0; overflow:auto; padding:22px 24px 30px;">
+                <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.12em; color:#6b747c;">STAGE {{ stageOrdinal }}</div>
+                <div style="font-size:26px; font-weight:600; letter-spacing:-0.015em; margin-top:6px;">{{ detail.name }}</div>
+                <div style="font-size:12.5px; color:#8b949c; line-height:1.65; margin-top:8px; max-width:560px; text-wrap:pretty;">{{ detail.blurb }}</div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(168px, 1fr)); gap:10px; margin-top:22px;">
+                  <sc-for list="{{ detail.rows }}" as="r" hint-placeholder-count="3">
+                    <div style="padding:13px 14px; background:#0e1114; border:1px solid #1c2126; border-radius:8px;">
+                      <div style="font-size:10.5px; letter-spacing:0.09em; color:#7d868e; text-transform:uppercase;">{{ r.k }}</div>
+                      <div style="{{ r.valStyle }}">{{ r.v }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="margin-top:24px; padding:14px 16px; background:#0d1013; border:1px solid #1c2126; border-radius:8px;">
+                  <div style="font-size:10.5px; letter-spacing:0.09em; color:#7d868e; margin-bottom:10px;">STAGE OUTPUT</div>
+                  <pre style="margin:0; font-family:'JetBrains Mono',monospace; font-size:11.5px; line-height:1.75; color:#a9b2b9; white-space:pre-wrap;">{{ detail.output }}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ viewPerf }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1; overflow:auto; min-width:0; background:#0a0b0d; padding:20px 24px 32px; animation:vfade 0.16s ease both;">
+            <div style="display:flex; align-items:flex-end; gap:12px;">
+              <div>
+                <div style="font-size:13.5px; font-weight:600;">Performance</div>
+                <div style="font-size:11px; color:#6b747c; font-family:'JetBrains Mono',monospace;">live profile · sampling 1 kHz</div>
+              </div>
+              <div style="flex:1;"></div>
+              <div style="{{ perfLiveStyle }}"><span style="width:6px; height:6px; border-radius:50%; background:oklch(0.76 0.13 155); animation:vpulse 1.6s ease-in-out infinite;"></span>{{ perfLiveLabel }}</div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-top:18px;">
+              <sc-for list="{{ metrics }}" as="m" hint-placeholder-count="6">
+                <div style="padding:14px 15px; background:#0e1114; border:1px solid #1c2126; border-radius:9px;">
+                  <div style="font-size:10.5px; letter-spacing:0.09em; color:#7d868e; text-transform:uppercase;">{{ m.k }}</div>
+                  <div style="display:flex; align-items:baseline; gap:5px; margin-top:9px; font-family:'JetBrains Mono',monospace;">
+                    <span style="font-size:23px; letter-spacing:-0.02em; color:#e9ecef;">{{ m.v }}</span>
+                    <span style="font-size:11px; color:#6b747c;">{{ m.u }}</span>
+                  </div>
+                  <div style="height:3px; margin-top:11px; border-radius:2px; background:#191d21; overflow:hidden;">
+                    <div style="{{ m.barStyle }}"></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="margin-top:18px; padding:16px; background:#0e1114; border:1px solid #1c2126; border-radius:9px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="font-size:10.5px; letter-spacing:0.09em; color:#7d868e;">CPU · LAST 40 SAMPLES</div>
+                <div style="flex:1;"></div>
+                <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#6b747c;">peak {{ cpuPeak }}%</div>
+              </div>
+              <div style="margin-top:10px;">{{ sparkline }}</div>
+            </div>
+
+            <div style="margin-top:18px; padding:16px 16px 20px; background:#0e1114; border:1px solid #1c2126; border-radius:9px;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div style="font-size:10.5px; letter-spacing:0.09em; color:#7d868e;">CONCURRENT TASK TIMELINE</div>
+                <div style="flex:1;"></div>
+                <div style="display:flex; gap:14px; font-size:11px; color:#6b747c;">
+                  <span style="display:flex; align-items:center; gap:6px;"><span style="width:8px; height:8px; border-radius:2px; background:oklch(0.72 0.10 190);"></span>handler</span>
+                  <span style="display:flex; align-items:center; gap:6px;"><span style="width:8px; height:8px; border-radius:2px; background:oklch(0.68 0.09 285);"></span>db await</span>
+                  <span style="display:flex; align-items:center; gap:6px;"><span style="width:8px; height:8px; border-radius:2px; background:#39424a;"></span>idle</span>
+                </div>
+              </div>
+              <div style="margin-top:14px; position:relative;">
+                <sc-for list="{{ tasks }}" as="t" hint-placeholder-count="8">
+                  <div style="display:flex; align-items:center; gap:12px; height:26px;">
+                    <span style="width:92px; min-width:44px; flex:0 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:'JetBrains Mono',monospace; font-size:11px; color:#8b949c;">{{ t.label }}</span>
+                    <span style="width:52px; min-width:0; flex:0 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#5e666d;">{{ t.thread }}</span>
+                    <div style="flex:1 1 40%; min-width:80px; height:9px; position:relative; background:#121518; border-radius:3px; overflow:hidden;">
+                      <div style="{{ t.barStyle }}"></div>
+                      <div style="{{ t.awaitStyle }}"></div>
+                    </div>
+                    <span style="width:56px; min-width:0; flex:0 1 auto; overflow:hidden; text-align:right; font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#6b747c;">{{ t.dur }}</span>
+                  </div>
+                </sc-for>
+                <div style="{{ playheadStyle }}"></div>
+              </div>
+              <div style="display:flex; margin-top:10px; padding-left:min(156px, 24%); font-family:'JetBrains Mono',monospace; font-size:10px; color:#4c545b; justify-content:space-between;">
+                <span>0 ms</span><span>8</span><span>16</span><span>24</span><span>32</span><span>40 ms</span>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ viewSettings }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1; display:flex; min-width:0; background:#0a0b0d; animation:vfade 0.16s ease both;">
+            <div style="width:190px; flex:none; border-right:1px solid #15191c; padding:16px 10px; overflow:auto;">
+              <div style="font-size:10.5px; font-weight:600; letter-spacing:0.10em; color:#8b949c; padding:0 8px 8px;">SETTINGS</div>
+              <sc-for list="{{ settingCats }}" as="c" hint-placeholder-count="9">
+                <div onClick="{{ c.click }}" style="{{ c.style }}">{{ c.name }}</div>
+              </sc-for>
+            </div>
+            <div style="flex:1; overflow:auto; padding:22px 26px 40px; min-width:0;">
+              <div style="font-size:20px; font-weight:600; letter-spacing:-0.01em;">{{ settingsTab }}</div>
+              <div style="font-size:12px; color:#7d868e; margin-top:5px;">{{ settingsBlurb }}</div>
+              <div style="margin-top:20px; border:1px solid #1c2126; border-radius:9px; overflow:hidden;">
+                <sc-for list="{{ settingRows }}" as="r" hint-placeholder-count="6">
+                  <div style="{{ r.rowStyle }}">
+                    <div style="flex:1; min-width:0;">
+                      <div style="font-size:12.5px; color:#e6e9ec;">{{ r.label }}</div>
+                      <div style="font-size:11.5px; color:#6b747c; margin-top:3px;">{{ r.help }}</div>
+                    </div>
+                    <div style="flex:none;">{{ r.control }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ viewExt }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1; overflow:auto; min-width:0; background:#0a0b0d; padding:22px 26px 36px; animation:vfade 0.16s ease both;">
+            <div style="font-size:20px; font-weight:600; letter-spacing:-0.01em;">Extensions</div>
+            <div style="font-size:12px; color:#7d868e; margin-top:5px;">Curated tooling for the Izvor toolchain.</div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(292px, 1fr)); gap:12px; margin-top:20px;">
+              <sc-for list="{{ extensions }}" as="e" hint-placeholder-count="6">
+                <div style="padding:15px; background:#0e1114; border:1px solid #1c2126; border-radius:10px; display:flex; gap:13px;" style-hover="border-color:#2a3138; background:#101418">
+                  <div style="{{ e.iconStyle }}">{{ e.mark }}</div>
+                  <div style="flex:1; min-width:0;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span style="font-size:13px; font-weight:550;">{{ e.name }}</span>
+                      <sc-if value="{{ e.verified }}" hint-placeholder-val="{{ false }}">
+                        <span style="color:oklch(0.78 0.09 190); font-size:11px;">✓</span>
+                      </sc-if>
+                    </div>
+                    <div style="font-size:11.5px; color:#8b949c; line-height:1.55; margin-top:5px; text-wrap:pretty;">{{ e.desc }}</div>
+                    <div style="display:flex; align-items:center; gap:10px; margin-top:11px;">
+                      <div onClick="{{ e.click }}" style="{{ e.btnStyle }}">{{ e.btn }}</div>
+                      <span style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#5e666d;">{{ e.installs }}</span>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ termOpen }}" hint-placeholder-val="{{ true }}">
+        <div onMouseDown="{{ dragTerm }}" style="height:4px; flex:none; cursor:row-resize; background:transparent; margin-bottom:-2px; z-index:15;" style-hover="background:oklch(0.55 0.09 195)"></div>
+        <div style="{{ termStyle }}">
+          <div style="height:32px; flex:none; display:flex; align-items:stretch; border-bottom:1px solid #191d21; background:#0d0f11;">
+            <sc-for list="{{ termTabs }}" as="t" hint-placeholder-count="3">
+              <div onClick="{{ t.click }}" style="{{ t.style }}">
+                {{ t.name }}
+                <sc-if value="{{ t.count }}" hint-placeholder-val="{{ false }}">
+                  <span style="{{ t.countStyle }}">{{ t.countLabel }}</span>
+                </sc-if>
+              </div>
+            </sc-for>
+            <div style="flex:1;"></div>
+            <div style="display:flex; align-items:center; gap:1px; padding:0 8px;">
+              <div onClick="{{ termClear }}" title="Clear" style="width:24px; height:24px; border-radius:5px; display:flex; align-items:center; justify-content:center; color:#7d868e; cursor:pointer; font-size:12px;" style-hover="background:#181c20; color:#e6e9ec">⌫</div>
+              <div onClick="{{ termNew }}" title="New Terminal" style="width:24px; height:24px; border-radius:5px; display:flex; align-items:center; justify-content:center; color:#7d868e; cursor:pointer; font-size:13px;" style-hover="background:#181c20; color:#e6e9ec">＋</div>
+              <div onClick="{{ termMaximize }}" title="Maximize" style="width:24px; height:24px; border-radius:5px; display:flex; align-items:center; justify-content:center; color:#7d868e; cursor:pointer; font-size:11px;" style-hover="background:#181c20; color:#e6e9ec">⌃</div>
+              <div onClick="{{ toggleTerm }}" title="Close" style="width:24px; height:24px; border-radius:5px; display:flex; align-items:center; justify-content:center; color:#7d868e; cursor:pointer; font-size:12px;" style-hover="background:#181c20; color:#e6e9ec">⤫</div>
+            </div>
+          </div>
+
+          <sc-if value="{{ termIsShell }}" hint-placeholder-val="{{ true }}">
+            <div ref="{{ termRef }}" style="flex:1; overflow:auto; padding:10px 16px 14px; font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.72;">
+              <sc-for list="{{ termLines }}" as="l" hint-placeholder-count="14">
+                <div style="{{ l.style }}">{{ l.text }}</div>
+              </sc-for>
+              <div style="display:flex; gap:8px; align-items:center; color:#8b949c;">
+                <span style="color:oklch(0.78 0.09 190);">❯</span>
+                <span style="display:inline-block; width:7px; height:14px; background:#3f4a52; animation:vblink 1.05s steps(1) infinite;"></span>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ termIsBuild }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1; overflow:auto; padding:12px 16px 16px; font-family:'JetBrains Mono',monospace; font-size:12px;">
+              <div style="color:#8b949c; margin-bottom:10px;"><span style="color:oklch(0.78 0.09 190);">❯</span> izvor build --release</div>
+              <sc-for list="{{ buildRows }}" as="b" hint-placeholder-count="9">
+                <div style="display:flex; align-items:center; gap:12px; height:22px;">
+                  <span style="{{ b.nameStyle }}">{{ b.name }}</span>
+                  <span style="{{ b.markStyle }}">{{ b.mark }}</span>
+                  <div style="flex:1; height:1px; background:#181c20;"></div>
+                  <span style="width:64px; text-align:right; font-size:11px; color:#5e666d;">{{ b.ms }}</span>
+                </div>
+              </sc-for>
+              <sc-if value="{{ buildFinished }}" hint-placeholder-val="{{ true }}">
+                <div style="margin-top:14px; padding-top:12px; border-top:1px solid #191d21; display:flex; gap:28px; animation:vslide 0.2s ease both;">
+                  <div><div style="font-size:10.5px; color:#6b747c; letter-spacing:0.08em;">BUILD</div><div style="color:oklch(0.76 0.13 155); margin-top:4px;">completed in {{ buildTime }}</div></div>
+                  <div><div style="font-size:10.5px; color:#6b747c; letter-spacing:0.08em;">BINARY SIZE</div><div style="color:#e6e9ec; margin-top:4px;">1.8 MB</div></div>
+                  <div><div style="font-size:10.5px; color:#6b747c; letter-spacing:0.08em;">MEMORY USAGE</div><div style="color:#e6e9ec; margin-top:4px;">14.2 MB</div></div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ termIsProblems }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1; overflow:auto; padding:8px 10px 14px;">
+              <sc-for list="{{ problems }}" as="p" hint-placeholder-count="3">
+                <div onClick="{{ p.click }}" style="{{ p.style }}">
+                  <span style="{{ p.iconStyle }}">{{ p.icon }}</span>
+                  <div style="flex:1; min-width:0;">
+                    <div style="font-size:12.5px; color:#e0e4e8; line-height:1.5;">{{ p.message }}</div>
+                    <div style="font-size:11px; color:#6b747c; font-family:'JetBrains Mono',monospace; margin-top:3px;">{{ p.where }} · {{ p.code }}</div>
+                  </div>
+                  <span style="{{ p.tagStyle }}">{{ p.tag }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{ aiOpen }}" hint-placeholder-val="{{ true }}">
+      <div onMouseDown="{{ dragAi }}" style="width:4px; flex:none; cursor:col-resize; background:transparent; margin-right:-2px; z-index:15;" style-hover="background:oklch(0.55 0.09 195)"></div>
+      <div style="{{ aiStyle }}">
+        <div style="height:38px; flex:none; display:flex; align-items:center; gap:9px; padding:0 10px 0 13px; border-bottom:1px solid #191d21;">
+          <div style="width:16px; height:16px; border-radius:5px; background:linear-gradient(150deg, oklch(0.74 0.11 300), oklch(0.66 0.10 245)); display:flex; align-items:center; justify-content:center; font-size:9px; color:#0b0710; font-weight:700; font-family:'JetBrains Mono',monospace;">A</div>
+          <span style="font-weight:600; font-size:12.5px;">Izvor AI</span>
+          <span style="padding:2px 6px; border:1px solid #262c32; border-radius:4px; font-size:10px; color:#8b949c; font-family:'JetBrains Mono',monospace;">agent</span>
+          <div style="flex:1;"></div>
+          <div onClick="{{ newChat }}" title="New Chat" style="width:24px; height:24px; border-radius:5px; display:flex; align-items:center; justify-content:center; color:#7d868e; cursor:pointer; font-size:13px;" style-hover="background:#181c20; color:#e6e9ec">＋</div>
+          <div onClick="{{ toggleAi }}" title="Collapse  ⌘I" style="width:24px; height:24px; border-radius:5px; display:flex; align-items:center; justify-content:center; color:#7d868e; cursor:pointer; font-size:12px;" style-hover="background:#181c20; color:#e6e9ec">⤫</div>
+        </div>
+
+        <div style="flex:none; padding:9px 12px; border-bottom:1px solid #15191c; display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
+          <span style="font-size:10.5px; letter-spacing:0.09em; color:#6b747c; margin-right:2px;">CONTEXT</span>
+          <sc-for list="{{ aiContext }}" as="c" hint-placeholder-count="3">
+            <span style="display:flex; align-items:center; gap:5px; padding:2.5px 7px; background:#12161a; border:1px solid #23292e; border-radius:5px; font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#c6ccd2;">
+              <span style="color:oklch(0.78 0.09 190);">◆</span>{{ c.name }}
+            </span>
+          </sc-for>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#5e666d;">+ symbol index</span>
+        </div>
+
+        <div ref="{{ chatRef }}" style="flex:1; overflow:auto; padding:14px 12px 16px; display:flex; flex-direction:column; gap:14px; min-height:0;">
+          <sc-for list="{{ aiMsgs }}" as="m" hint-placeholder-count="3">
+            <div style="{{ m.wrapStyle }}">
+              <sc-if value="{{ m.isUser }}" hint-placeholder-val="{{ false }}">
+                <div style="align-self:flex-end; max-width:92%; padding:9px 12px; background:#181d22; border:1px solid #252b31; border-radius:9px 9px 3px 9px; font-size:12.5px; line-height:1.6; color:#e6e9ec;">{{ m.text }}</div>
+              </sc-if>
+              <sc-if value="{{ m.isAi }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; gap:9px;">
+                  <div style="width:16px; height:16px; flex:none; margin-top:2px; border-radius:5px; background:linear-gradient(150deg, oklch(0.74 0.11 300), oklch(0.66 0.10 245));"></div>
+                  <div style="flex:1; min-width:0; font-size:12.5px; line-height:1.68; color:#ccd2d8;">{{ m.text }}<sc-if value="{{ m.streaming }}" hint-placeholder-val="{{ false }}"><span style="display:inline-block; width:6px; height:12px; margin-left:2px; vertical-align:-2px; background:oklch(0.74 0.11 300); animation:vblink 1s steps(1) infinite;"></span></sc-if></div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ m.isPlan }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-left:25px; margin-top:9px; border:1px solid #23292e; border-radius:8px; overflow:hidden; background:#0c0f11;">
+                  <sc-for list="{{ m.steps }}" as="s" hint-placeholder-count="3">
+                    <div style="display:flex; align-items:flex-start; gap:8px; padding:7px 11px; border-bottom:1px solid #15191c; font-size:11.5px; line-height:1.55; color:#a9b2b9;">
+                      <span style="{{ s.dotStyle }}">{{ s.dot }}</span>{{ s.text }}
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ m.isDiff }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-left:25px; margin-top:10px; border:1px solid #23292e; border-radius:9px; overflow:hidden; background:#0c0f11; animation:vslide 0.24s ease both;">
+                  <div style="display:flex; align-items:center; gap:8px; padding:8px 11px; border-bottom:1px solid #1b2024; background:#0f1215;">
+                    <span style="color:oklch(0.78 0.09 190); font-size:10px;">◆</span>
+                    <span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:#e6e9ec;">server.iz</span>
+                    <span style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#6b747c;">{{ m.range }}</span>
+                    <div style="flex:1;"></div>
+                    <span style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:oklch(0.76 0.13 155);">+3</span>
+                    <span style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:oklch(0.66 0.16 25);">−3</span>
+                  </div>
+                  <div style="padding:6px 0; font-family:'JetBrains Mono',monospace; font-size:11.5px; line-height:1.7;">
+                    <sc-for list="{{ m.diff }}" as="d" hint-placeholder-count="6">
+                      <div style="{{ d.style }}">
+                        <span style="width:34px; flex:none; text-align:right; padding-right:9px; color:#4c545b; font-size:10.5px;">{{ d.num }}</span>
+                        <span style="{{ d.signStyle }}">{{ d.sign }}</span>
+                        <span style="white-space:pre;">{{ d.text }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:7px; padding:9px 11px; border-top:1px solid #1b2024; background:#0f1215;">
+                    <div onClick="{{ applyDiff }}" style="{{ applyBtnStyle }}">{{ applyLabel }}</div>
+                    <div onClick="{{ rejectDiff }}" style="height:26px; padding:0 11px; display:flex; align-items:center; border:1px solid #262c32; border-radius:6px; cursor:pointer; font-size:11.5px; color:#c6ccd2;" style-hover="background:#181c20; border-color:#333a41">Reject</div>
+                    <div onClick="{{ explainDiff }}" style="height:26px; padding:0 11px; display:flex; align-items:center; border:1px solid #262c32; border-radius:6px; cursor:pointer; font-size:11.5px; color:#c6ccd2;" style-hover="background:#181c20; border-color:#333a41">Explain</div>
+                    <div style="flex:1;"></div>
+                    <span style="font-size:10.5px; color:#5e666d; font-family:'JetBrains Mono',monospace;">borrow-check ✓</span>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="flex:none; padding:10px 12px 12px; border-top:1px solid #191d21; background:#0d0f11;">
+          <div style="border:1px solid #262c32; border-radius:9px; background:#0b0d0f; padding:9px 10px;" style-focus-within="border-color:oklch(0.52 0.08 195)">
+            <textarea value="{{ aiInput }}" onChange="{{ onAiInput }}" onKeyDown="{{ onAiKey }}" placeholder="Ask Izvor AI anything…" style="width:100%; height:44px; resize:none; border:none; background:transparent; color:#e6e9ec; font-size:12.5px; line-height:1.55;"></textarea>
+            <div style="display:flex; align-items:center; gap:7px; margin-top:4px;">
+              <div onClick="{{ addContext }}" title="Add context" style="width:24px; height:24px; border-radius:6px; border:1px solid #262c32; display:flex; align-items:center; justify-content:center; color:#8b949c; cursor:pointer; font-size:12px;" style-hover="background:#161a1e; color:#e6e9ec">＠</div>
+              <div onClick="{{ addContext }}" title="Attach file" style="width:24px; height:24px; border-radius:6px; border:1px solid #262c32; display:flex; align-items:center; justify-content:center; color:#8b949c; cursor:pointer; font-size:12px;" style-hover="background:#161a1e; color:#e6e9ec">⎘</div>
+              <div style="flex:1;"></div>
+              <span style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#5e666d;">⏎ send</span>
+              <div onClick="{{ sendAi }}" style="{{ sendBtnStyle }}">↑</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:9px; margin-top:9px; font-size:10.5px; color:#6b747c; font-family:'JetBrains Mono',monospace;">
+            <span style="color:#8b949c;">Izvor AI</span>
+            <span style="color:#3f464c;">|</span>
+            <span>{{ ctxUsed }} / 128k</span>
+            <div style="flex:1; height:3px; border-radius:2px; background:#181c20; overflow:hidden;">
+              <div style="{{ ctxBarStyle }}"></div>
+            </div>
+            <span>{{ aiStatus }}</span>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="height:24px; flex:none; display:flex; align-items:center; gap:14px; padding:0 12px; overflow:hidden; white-space:nowrap; background:#0d0f11; border-top:1px solid #1b2024; font-size:11px; color:#8b949c; font-family:'JetBrains Mono',monospace;">
+    <span onClick="{{ openGit }}" style="display:flex; align-items:center; gap:6px; cursor:pointer;" style-hover="color:#e6e9ec">⑂ main <span style="color:#5e666d;">↑1</span></span>
+    <span onClick="{{ openProblems }}" style="display:flex; align-items:center; gap:9px; cursor:pointer;" style-hover="color:#e6e9ec">
+      <span style="color:oklch(0.66 0.16 25);">⊗ {{ errCount }}</span>
+      <span style="color:oklch(0.80 0.12 80);">⚠ {{ warnCount }}</span>
+      <span style="color:oklch(0.72 0.08 240);">ⓘ {{ infoCount }}</span>
+    </span>
+    <span style="{{ runStatusStyle }}">{{ runStatusText }}</span>
+    <div style="flex:1;"></div>
+    <span>{{ cursorLabel }}</span>
+    <span style="{{ statusOptionalStyle }}">Spaces: {{ tabSize }}</span>
+    <span style="{{ statusOptionalStyle }}">UTF-8</span>
+    <span onClick="{{ openCompiler }}" style="cursor:pointer;" style-hover="color:#e6e9ec">Izvor 1.4</span>
+    <span onClick="{{ openPerf }}" style="cursor:pointer;" style-hover="color:#e6e9ec">CPU {{ cpu }}%</span>
+    <span style="color:#5e666d;">{{ target }}</span>
+  </div>
+
+  <sc-if value="{{ paletteOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closePalette }}" style="position:absolute; inset:0; z-index:60; background:rgba(5,6,7,0.55); backdrop-filter:blur(2px); display:flex; justify-content:center; padding-top:11vh; animation:vfade 0.12s ease both;">
+      <div onClick="{{ stop }}" style="width:min(620px, 88vw); max-height:66vh; display:flex; flex-direction:column; background:#101317; border:1px solid #2b3238; border-radius:12px; box-shadow:0 32px 80px rgba(0,0,0,0.66); overflow:hidden; animation:vpop 0.16s cubic-bezier(0.16,1,0.3,1) both;">
+        <div style="display:flex; align-items:center; gap:11px; padding:0 15px; height:50px; border-bottom:1px solid #1e2429;">
+          <span style="color:#6b747c; font-size:13px;">⌕</span>
+          <input value="{{ paletteQuery }}" onChange="{{ onPaletteQuery }}" onKeyDown="{{ onPaletteKey }}" ref="{{ paletteRef }}" placeholder="Search commands…" style="flex:1; border:none; background:transparent; color:#e6e9ec; font-size:14.5px;" />
+          <span style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#5e666d; padding:2px 6px; border:1px solid #262c32; border-radius:4px;">esc</span>
+        </div>
+        <div style="flex:1; overflow:auto; padding:6px;">
+          <sc-for list="{{ paletteItems }}" as="c" hint-placeholder-count="8">
+            <div onClick="{{ c.click }}" onMouseEnter="{{ c.enter }}" style="{{ c.style }}">
+              <span style="{{ c.iconStyle }}">{{ c.icon }}</span>
+              <span style="flex:1; font-size:13px;">{{ c.label }}</span>
+              <span style="font-size:11px; color:#6b747c;">{{ c.group }}</span>
+              <span style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#8b949c; padding:2px 6px; border:1px solid #262c32; border-radius:4px;">{{ c.keys }}</span>
+            </div>
+          </sc-for>
+          <sc-if value="{{ paletteEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:26px; text-align:center; color:#6b747c; font-size:12.5px;">No matching commands</div>
+          </sc-if>
+        </div>
+        <div style="height:32px; flex:none; display:flex; align-items:center; gap:16px; padding:0 15px; border-top:1px solid #1e2429; background:#0d1013; font-size:10.5px; color:#6b747c; font-family:'JetBrains Mono',monospace;">
+          <span>↑↓ navigate</span><span>⏎ run</span><span>⌘K toggle</span>
+          <div style="flex:1;"></div>
+          <span>{{ paletteCount }} commands</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ ctxOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeCtx }}" onContextMenu="{{ closeCtx }}" style="position:absolute; inset:0; z-index:70;">
+      <div onClick="{{ stop }}" style="{{ ctxStyle }}">
+        <sc-for list="{{ ctxItems }}" as="i" hint-placeholder-count="5">
+          <div onClick="{{ i.click }}" style="{{ i.style }}">
+            <span style="flex:1;">{{ i.label }}</span>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#5e666d;">{{ i.keys }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toastOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute; bottom:38px; right:18px; z-index:80; display:flex; align-items:center; gap:10px; padding:11px 14px; background:#12161a; border:1px solid #2b3238; border-radius:9px; box-shadow:0 18px 44px rgba(0,0,0,0.55); animation:vpop 0.2s cubic-bezier(0.16,1,0.3,1) both;">
+      <span style="{{ toastIconStyle }}">{{ toastIcon }}</span>
+      <div>
+        <div style="font-size:12.5px; color:#e6e9ec;">{{ toastTitle }}</div>
+        <div style="font-size:11px; color:#7d868e; margin-top:2px; font-family:'JetBrains Mono',monospace;">{{ toastSub }}</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isWelcome }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute; inset:0; z-index:90; background:#0a0b0d; display:flex; animation:vfade 0.2s ease both;">
+      <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:0 clamp(40px, 7vw, 110px);">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div style="width:34px; height:34px; border-radius:9px; background:linear-gradient(160deg, oklch(0.82 0.11 190), oklch(0.60 0.12 235)); display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-weight:700; color:#06131a; font-size:17px;">I</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.22em; color:#6b747c;">IZVOR STUDIO 1.4</div>
+        </div>
+        <div style="font-size:clamp(58px, 8.5vw, 108px); font-weight:600; letter-spacing:-0.045em; line-height:0.95; margin-top:26px;">IZVOR</div>
+        <div style="font-size:clamp(16px, 1.6vw, 21px); color:#9aa3ab; margin-top:14px; letter-spacing:-0.005em;">Native performance. Human simplicity.</div>
+        <div style="display:flex; gap:9px; margin-top:34px; flex-wrap:wrap;">
+          <div onClick="{{ goNewProject }}" style="height:36px; padding:0 16px; display:flex; align-items:center; gap:8px; border-radius:8px; background:oklch(0.80 0.10 190); color:#04141a; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="background:oklch(0.86 0.10 190)">New Project</div>
+          <div onClick="{{ goIde }}" style="height:36px; padding:0 16px; display:flex; align-items:center; gap:8px; border-radius:8px; border:1px solid #2b3238; background:#0f1215; font-size:12.5px; cursor:pointer;" style-hover="background:#161b1f; border-color:#39424a">Open Project</div>
+          <div onClick="{{ goIde }}" style="height:36px; padding:0 16px; display:flex; align-items:center; gap:8px; border-radius:8px; border:1px solid #2b3238; background:#0f1215; font-size:12.5px; cursor:pointer;" style-hover="background:#161b1f; border-color:#39424a">Clone Repository</div>
+        </div>
+        <div style="margin-top:44px; max-width:520px;">
+          <div style="font-size:10.5px; letter-spacing:0.11em; color:#6b747c; padding-bottom:6px;">RECENT PROJECTS</div>
+          <sc-for list="{{ recents }}" as="r" hint-placeholder-count="4">
+            <div onClick="{{ r.click }}" style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:8px; cursor:pointer; border:1px solid transparent;" style-hover="background:#0f1215; border-color:#1e2429">
+              <span style="color:oklch(0.78 0.09 190); font-size:11px;">◆</span>
+              <span style="font-family:'JetBrains Mono',monospace; font-size:12.5px; color:#dfe4e8;">{{ r.name }}</span>
+              <div style="flex:1;"></div>
+              <span style="font-size:11px; color:#5e666d;">{{ r.path }}</span>
+              <span style="font-size:11px; color:#4c545b; font-family:'JetBrains Mono',monospace;">{{ r.when }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="width:min(46%, 620px); flex:none; border-left:1px solid #15191c; background:#0c0e10; display:flex; flex-direction:column; justify-content:center; padding:0 clamp(28px, 4vw, 60px); position:relative; overflow:hidden;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.11em; color:#6b747c;">WHAT’S NEW IN 1.4</div>
+        <div style="margin-top:16px; display:flex; flex-direction:column; gap:1px;">
+          <sc-for list="{{ whatsNew }}" as="w" hint-placeholder-count="4">
+            <div style="padding:14px 0; border-bottom:1px solid #15191c;">
+              <div style="display:flex; align-items:baseline; gap:10px;">
+                <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:oklch(0.78 0.09 190);">{{ w.tag }}</span>
+                <span style="font-size:13px; color:#e6e9ec; font-weight:500;">{{ w.title }}</span>
+              </div>
+              <div style="font-size:12px; color:#8b949c; line-height:1.6; margin-top:5px; text-wrap:pretty;">{{ w.body }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:26px; padding:16px; border:1px solid #1c2126; border-radius:10px; background:#0e1114; font-family:'JetBrains Mono',monospace; font-size:11.5px; line-height:1.8; color:#8b949c;">
+          <div style="color:#e6e9ec;">❯ izvor build --release</div>
+          <div style="margin-top:6px;">borrow analysis  <span style="color:oklch(0.76 0.13 155);">✓</span>  ·  optimization  <span style="color:oklch(0.76 0.13 155);">✓</span></div>
+          <div>completed in <span style="color:#e6e9ec;">0.82s</span> · binary <span style="color:#e6e9ec;">1.8 MB</span></div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isNew }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute; inset:0; z-index:95; background:#0a0b0d; display:flex; flex-direction:column; animation:vfade 0.18s ease both;">
+      <div style="height:52px; flex:none; display:flex; align-items:center; gap:12px; padding:0 20px; border-bottom:1px solid #15191c;">
+        <div onClick="{{ goWelcome }}" style="width:26px; height:26px; border-radius:6px; border:1px solid #262c32; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#c6ccd2; font-size:12px;" style-hover="background:#161b1f">←</div>
+        <div style="font-size:13.5px; font-weight:600;">New Izvor Project</div>
+        <div style="flex:1;"></div>
+        <div onClick="{{ goIde }}" style="height:32px; padding:0 16px; display:flex; align-items:center; border-radius:7px; background:oklch(0.80 0.10 190); color:#04141a; font-size:12.5px; font-weight:600; cursor:pointer;" style-hover="background:oklch(0.86 0.10 190)">Create Project</div>
+      </div>
+      <div style="flex:1; display:flex; min-height:0;">
+        <div style="flex:1; overflow:auto; padding:24px 26px 34px; min-width:0;">
+          <div style="font-size:10.5px; letter-spacing:0.11em; color:#6b747c;">TEMPLATE</div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:10px; margin-top:12px;">
+            <sc-for list="{{ templates }}" as="t" hint-placeholder-count="7">
+              <div onClick="{{ t.click }}" style="{{ t.style }}">
+                <div style="{{ t.markStyle }}">{{ t.mark }}</div>
+                <div style="font-size:13px; font-weight:500; margin-top:12px;">{{ t.name }}</div>
+                <div style="font-size:11.5px; color:#7d868e; line-height:1.55; margin-top:5px; text-wrap:pretty;">{{ t.desc }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="width:340px; flex:none; border-left:1px solid #15191c; background:#0c0e10; padding:24px 22px; overflow:auto;">
+          <div style="font-size:10.5px; letter-spacing:0.11em; color:#6b747c;">CONFIGURATION</div>
+          <div style="display:flex; flex-direction:column; gap:14px; margin-top:14px;">
+            <div>
+              <div style="font-size:11.5px; color:#8b949c; margin-bottom:6px;">Project Name</div>
+              <input value="{{ npName }}" onChange="{{ onNpName }}" style="width:100%; height:32px; background:#0b0d0f; border:1px solid #23282d; border-radius:7px; color:#e6e9ec; font-family:'JetBrains Mono',monospace; font-size:12.5px; padding:0 10px;" style-focus="border-color:oklch(0.55 0.08 195)" />
+            </div>
+            <div>
+              <div style="font-size:11.5px; color:#8b949c; margin-bottom:6px;">Location</div>
+              <div style="display:flex; gap:6px;">
+                <input value="~/dev" style="flex:1; height:32px; background:#0b0d0f; border:1px solid #23282d; border-radius:7px; color:#c6ccd2; font-family:'JetBrains Mono',monospace; font-size:12.5px; padding:0 10px;" />
+                <div style="width:34px; height:32px; border:1px solid #23282d; border-radius:7px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#8b949c;" style-hover="background:#161b1f">⋯</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11.5px; color:#8b949c; margin-bottom:6px;">Target</div>
+              <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                <sc-for list="{{ targets }}" as="t" hint-placeholder-count="4">
+                  <div onClick="{{ t.click }}" style="{{ t.style }}">{{ t.name }}</div>
+                </sc-for>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11.5px; color:#8b949c; margin-bottom:6px;">Language Version</div>
+              <div style="display:flex; gap:6px;">
+                <sc-for list="{{ versions }}" as="v" hint-placeholder-count="3">
+                  <div onClick="{{ v.click }}" style="{{ v.style }}">{{ v.name }}</div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:22px; padding:14px; border:1px solid #1c2126; border-radius:9px; background:#0e1114; font-family:'JetBrains Mono',monospace; font-size:11px; line-height:1.85; color:#8b949c;">
+            <div style="color:#c6ccd2;">{{ npName }}/</div>
+            <div>  src/main.iz</div>
+            <div>  tests/main_test.iz</div>
+            <div>  izvor.toml</div>
+            <div>  README.md</div>
+            <div style="margin-top:8px; color:#5e666d;">target = "{{ npTarget }}" · edition = "{{ npVersion }}"</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;welcome&quot;,&quot;ide&quot;],&quot;default&quot;:&quot;welcome&quot;,&quot;tsType&quot;:&quot;'welcome' | 'ide'&quot;,&quot;section&quot;:&quot;Launch&quot;},&quot;aiPanel&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;terminalPanel&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;minimap&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Layout&quot;}}">
+class Component extends DCLogic {
+  LH = 22;
+  KW = ['fn','async','await','let','var','return','for','in','spawn','struct','impl','enum','use','if','else','match','self','move','pub','mut','true','false','type','trait','const','while','defer','try','as','break','continue','where','yield','select'];
+
+  src = {
+    'main.iz': `use server.{Server, start_server}
+use routes.register_routes
+use std.log
+
+// Entry point. Izvor infers the type of every binding below.
+fn main() {
+    log.info("booting izvor-server")
+
+    let server = Server(
+        host: "localhost",
+        port: 8080,
+        workers: 8
+    )
+
+    register_routes(server)
+
+    start_server(server)
+}`,
+    'server.iz': `use std.net.{Listener, Connection}
+use std.async.{spawn, Task}
+use database
+use models.{Request, Response, User}
+
+// The server owns its listener for the whole program lifetime.
+// Fields are immutable unless declared \`var\`.
+struct Server {
+    host: String
+    port: Int
+    workers: Int
+}
+
+impl Server {
+    fn listen(self) -> Stream<Request> {
+        let listener = Listener.bind(self.host, self.port)?
+        return listener.incoming()
+    }
+
+    fn accept(self) -> Stream<Connection> {
+        return Listener.bind(self.host, self.port)?.connections()
+    }
+}
+
+async fn handle(request: Request) -> Response {
+    let user = await database.find_user(request.user_id)?
+
+    return Response.json(user)
+}
+
+async fn process_request(connection: Connection) -> Response {
+    let request = await connection.read_request()?
+    let response = await handle(request)
+
+    connection.write(response)
+    return move connection.finish()
+}
+
+async fn serve_batch(server: Server) {
+    for connection in server.accept() {
+        await process_request(connection)
+    }
+}
+
+async fn start_server(server: Server) {
+    for request in server.listen() {
+        spawn handle(request)
+    }
+}`,
+    'routes.iz': `use server.handle
+use models.{Request, Response}
+
+fn register_routes(server: Server) {
+    server.route("/health", health)
+    server.route("/users", handle)
+    server.route("/users/:id", handle)
+}
+
+async fn health(request: Request) -> Response {
+    return Response.text("ok")
+}`,
+    'models.iz': `use std.time.Instant
+use std.collections.Map
+
+struct User {
+    id: Int
+    name: String
+    email: String
+    created_at: Instant
+}
+
+struct Request {
+    user_id: Int
+    path: String
+    headers: Map<String, String>
+}
+
+impl Request {
+    fn header(self, key: String) -> String? {
+        let copy = self.headers.clone()
+        return copy.get(key)
+    }
+}
+
+struct Response {
+    status: Int
+    body: Bytes
+}`,
+    'database.iz': `use std.sql.{Pool, Row}
+use models.User
+
+let pool = Pool.connect("postgres://localhost/izvor")?
+
+async fn find_user(id: Int) -> User? {
+    let row = await pool.query_one("select * from users where id = $1", id)?
+
+    return User.from_row(row)
+}`,
+    'server_test.iz': `use test.{suite, expect}
+use server.{Server, handle}
+
+suite "server" {
+    test "binds to a port" {
+        let server = Server(host: "127.0.0.1", port: 0, workers: 2)
+        expect(server.workers).to_equal(2)
+    }
+}`,
+    'routes_test.iz': `use test.{suite, expect}
+use routes.register_routes
+
+suite "routes" {
+    test "registers every route" {
+        expect(register_routes.count()).to_equal(3)
+    }
+}`,
+    'izvor.toml': `[package]
+name = "izvor-server"
+version = "0.4.1"
+edition = "1.4"
+
+[build]
+target = "aarch64-apple-darwin"
+optimize = "speed"
+lto = true
+
+[dependencies]
+std = "1.4"
+sql = "0.9"`,
+    'README.md': `# izvor-server
+
+A concurrent HTTP service written in Izvor.
+
+    izvor build --release
+    izvor run
+
+Every request is handled on the task scheduler; the borrow
+checker guarantees no connection outlives its response.`
+  };
+
+  treeDef = [
+    { name: 'src', kind: 'folder', depth: 0 },
+    { name: 'main.iz', kind: 'file', depth: 1, parent: 'src', git: 'M' },
+    { name: 'server.iz', kind: 'file', depth: 1, parent: 'src', git: 'M' },
+    { name: 'routes.iz', kind: 'file', depth: 1, parent: 'src' },
+    { name: 'models.iz', kind: 'file', depth: 1, parent: 'src' },
+    { name: 'database.iz', kind: 'file', depth: 1, parent: 'src', git: 'A' },
+    { name: 'tests', kind: 'folder', depth: 0 },
+    { name: 'server_test.iz', kind: 'file', depth: 1, parent: 'tests' },
+    { name: 'routes_test.iz', kind: 'file', depth: 1, parent: 'tests' },
+    { name: 'izvor.toml', kind: 'file', depth: 0 },
+    { name: 'README.md', kind: 'file', depth: 0 }
+  ];
+
+  stages = [
+    { name: 'SOURCE', ms: '4 ms', blurb: 'Files are memory-mapped and hashed. Unchanged modules are served from the incremental cache.', rows: [['Files', '8'], ['Lines', '1,204'], ['Cached', '3 modules']], output: 'src/main.iz        62 lines   cold\nsrc/server.iz     148 lines   cold\nsrc/routes.iz      31 lines   cached\nsrc/models.iz      44 lines   cold' },
+    { name: 'LEXER', ms: '11 ms', blurb: 'A single pass produces a flat token buffer with byte spans retained for diagnostics.', rows: [['Tokens', '12,482'], ['Identifiers', '3,918'], ['Lexical errors', '0']], output: 'kw(async) kw(fn) ident(handle) punct(()\nident(request) punct(:) type(Request) punct())\narrow(->) type(Response) punct({)' },
+    { name: 'PARSER', ms: '18 ms', blurb: 'Recursive-descent parser with error recovery. Nodes are arena-allocated in source order.', rows: [['Tokens consumed', '12,482'], ['AST nodes', '1,842'], ['Syntax errors', '0']], output: 'FnDecl handle\n  Param request: Request\n  Await Call database.find_user\n  Return Call Response.json' },
+    { name: 'AST', ms: '3 ms', blurb: 'The resolved tree after name binding. Every identifier now points at a definition id.', rows: [['Nodes', '1,842'], ['Max depth', '14'], ['Declarations', '96']], output: 'module server\n  struct Server { host, port, workers }\n  fn handle -> async\n  fn start_server -> async' },
+    { name: 'TYPE CHECKER', ms: '96 ms', blurb: 'Bidirectional inference with local generalization. Annotations are optional almost everywhere.', rows: [['Types inferred', '742'], ['Type errors', '0'], ['Generic constraints', '183 resolved']], output: 'handle: (Request) -> Task<Response>\nfind_user: (Int) -> Task<User?>\nlisten: (Server) -> Stream<Request>' },
+    { name: 'BORROW CHECKER', ms: '54 ms', blurb: 'Region inference proves every reference outlives its use. No runtime ownership cost.', rows: [['Ownership violations', '0'], ['Unsafe accesses', '0'], ['Regions solved', '412']], output: "region 'r1: connection borrowed at 41:5\n  live until 42:12\n  move at 43:12 → deferred, ok\n0 violations" },
+    { name: 'IR', ms: '39 ms', blurb: 'Typed SSA form. Async functions are lowered into state machines here, not at runtime.', rows: [['Instructions', '4,318'], ['Basic blocks', '212'], ['State machines', '6']], output: 'bb0:\n  %0 = call @find_user(%req.user_id)\n  %1 = suspend %0\n  br bb1' },
+    { name: 'OPTIMIZER', ms: '213 ms', blurb: 'Inlining, escape analysis and loop transforms run to fixpoint at optimize = "speed".', rows: [['Transformations', '23'], ['Functions inlined', '18'], ['Allocations eliminated', '7']], output: 'inline    Response.json         (3 sites)\nsroa      Request.headers\nelide     Vec<Byte> in write()\nlicm      loop @serve_batch' },
+    { name: 'MACHINE CODE', ms: '384 ms', blurb: 'Direct emission to native code — no bytecode, no JIT, no runtime interpreter.', rows: [['Target', 'ARM64'], ['Architecture', 'Apple Silicon'], ['Binary', '1.8 MB']], output: '_handle:\n  stp   x29, x30, [sp, #-16]!\n  bl    _database_find_user\n  ldr   x1, [x0, #8]\n  ret' }
+  ];
+
+  extensionsDef = [
+    { name: 'Izvor Formatter', desc: 'Canonical formatting for .iz sources. Runs on save with zero configuration.', mark: '⌗', installs: '2.1M', installed: true, verified: true, publisher: 'izvor-lang' },
+    { name: 'GitHub Integration', desc: 'Pull requests, reviews and checks inline in the source control panel.', mark: '⑂', installs: '1.7M', installed: true, verified: true, publisher: 'github' },
+    { name: 'Docker Tools', desc: 'Build and run Izvor images, attach to containers, stream logs into the terminal.', mark: '▤', installs: '904K', installed: false, verified: true, publisher: 'docker' },
+    { name: 'Database Explorer', desc: 'Browse schemas and run queries against the pool declared in database.iz.', mark: '▦', installs: '612K', installed: false, verified: false, publisher: 'pgworks' },
+    { name: 'Markdown Tools', desc: 'Live preview, table formatting and link checking for docs alongside code.', mark: '¶', installs: '1.2M', installed: true, verified: false, publisher: 'community' },
+    { name: 'Izvor Profiler', desc: 'Flame graphs and allocation traces captured straight from a release binary.', mark: '◈', installs: '488K', installed: false, verified: true, publisher: 'izvor-lang' },
+    { name: 'Cloud Deployment', desc: 'One-command deploys to edge runtimes with target-aware cross compilation.', mark: '⬈', installs: '331K', installed: false, verified: false, publisher: 'fleetstack' }
+  ];
+
+  templatesDef = [
+    { name: 'Console Application', desc: 'A single main.iz entry point with argument parsing.', mark: '❯' },
+    { name: 'Web Server', desc: 'Concurrent HTTP service with routing and a database pool.', mark: '⬡' },
+    { name: 'CLI Tool', desc: 'Subcommands, flags and shell completion generation.', mark: '⌘' },
+    { name: 'Library', desc: 'A reusable module with a public API surface and doc tests.', mark: '▤' },
+    { name: 'Game', desc: 'Fixed-timestep loop with a GPU surface and asset pipeline.', mark: '◈' },
+    { name: 'Distributed Service', desc: 'Actor supervision, message passing and cluster discovery.', mark: '⬢' },
+    { name: 'Empty Project', desc: 'Just izvor.toml and an empty src directory.', mark: '·' }
+  ];
+
+  state = {
+    screen: 'welcome',
+    view: 'editor',
+    sidebar: 'explorer',
+    sidebarOpen: true,
+    sidebarW: 248,
+    aiOpen: true,
+    aiW: 384,
+    termOpen: true,
+    termH: 232,
+    termTab: 'Terminal',
+    tabs: ['main.iz', 'server.iz', 'routes.iz', 'models.iz'],
+    active: 'server.iz',
+    dirty: { 'routes.iz': true },
+    expanded: { src: true, tests: true },
+    cursor: 41,
+    hover: null,
+    folded: {},
+    ac: false,
+    acIdx: 0,
+    palette: false,
+    pq: '',
+    pIdx: 0,
+    filter: '',
+    query: 'handle',
+    gitMsg: '',
+    ctx: null,
+    toast: null,
+    stageIdx: 8,
+    stageSel: 4,
+    building: false,
+    buildDone: true,
+    running: false,
+    debugging: false,
+    dbgOpen: { 'BREAKPOINTS': true, 'CALL STACK': true, 'VARIABLES': true, 'WATCH': false, 'THREADS': false },
+    settingsTab: 'Editor',
+    settings: { fontSize: 13, tabSize: 4, wrap: false, minimap: true, formatOnSave: true, opt: 'speed', target: 'Apple Silicon', model: 'Izvor AI · agent', telemetry: false, theme: 'Izvor Dark' },
+    npName: 'my-service',
+    npTarget: 'Apple Silicon',
+    npVersion: '1.4',
+    npTemplate: 'Web Server',
+    aiInput: '',
+    applied: false,
+    aiMsgs: [
+      { role: 'user', text: 'Make the server handle requests concurrently.' },
+      { role: 'ai', text: 'I found the request loop in server.iz. I can replace the sequential handler with Izvor’s concurrent task model.', plan: [
+        { text: 'Read server.iz · serve_batch', done: true },
+        { text: 'Check ownership of connection across the spawn boundary', done: true },
+        { text: 'Propose 1 edit in server.iz', done: false }
+      ], diff: true }
+    ],
+    cpuSeries: [61, 66, 72, 69, 74, 78, 81, 77, 74, 79, 83, 80, 76, 72, 75, 79, 84, 81, 78, 74, 71, 76, 80, 83, 79, 75, 72, 77, 81, 78, 74, 70, 73, 78, 82, 79, 76, 73, 77, 78],
+    tick: 0,
+    exts: {}
+  };
+
+  componentDidMount() {
+    const p = this.props || {};
+    const patch = {};
+    if (p.startScreen === 'ide') patch.screen = 'ide';
+    if (p.aiPanel === false) patch.aiOpen = false;
+    if (p.terminalPanel === false) patch.termOpen = false;
+    if (p.minimap === false) patch.settings = Object.assign({}, this.state.settings, { minimap: false });
+    if (Object.keys(patch).length) this.setState(patch);
+    window.addEventListener('keydown', this.onKey);
+    window.addEventListener('resize', this.onResize);
+    this.onResize();
+    this.timer = setInterval(() => {
+      this.setState((s) => {
+        const last = s.cpuSeries[s.cpuSeries.length - 1];
+        let next = last + (Math.random() * 12 - 6);
+        if (s.running) next = Math.max(62, Math.min(94, next));
+        else next = Math.max(8, Math.min(34, next * 0.4 + 14));
+        return { cpuSeries: s.cpuSeries.slice(1).concat([Math.round(next)]), tick: s.tick + 1 };
+      });
+    }, 900);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.onKey);
+    window.removeEventListener('resize', this.onResize);
+    clearInterval(this.timer);
+    if (this.buildTimer) clearTimeout(this.buildTimer);
+    if (this.streamTimer) clearTimeout(this.streamTimer);
+  }
+
+  componentDidUpdate(prev) {
+    if (this.termEl && (prev.termLines !== this.state.termLines)) this.termEl.scrollTop = this.termEl.scrollHeight;
+  }
+
+  onResize = () => {
+    const w = window.innerWidth;
+    this.setState((s) => {
+      const patch = { winW: w };
+      // auto-collapse, but never fight a manual pin
+      if (w < 1180 && s.sidebarOpen && !s.pinSidebar) { patch.sidebarOpen = false; patch.autoSidebar = true; }
+      if (w >= 1180 && s.autoSidebar && !s.sidebarOpen) { patch.sidebarOpen = true; patch.autoSidebar = false; }
+      if (w < 980 && s.aiOpen && !s.pinAi) { patch.aiOpen = false; patch.autoAi = true; }
+      if (w >= 980 && s.autoAi && !s.aiOpen) { patch.aiOpen = true; patch.autoAi = false; }
+      const maxSide = Math.max(180, Math.round(w * 0.24));
+      if (s.sidebarW > maxSide) patch.sidebarW = maxSide;
+      const maxAi = Math.max(280, Math.round(w * 0.34));
+      if (s.aiW > maxAi) patch.aiW = maxAi;
+      return patch;
+    });
+  };
+
+  onKey = (e) => {
+    const mod = e.metaKey || e.ctrlKey;
+    const tag = (e.target && e.target.tagName) || '';
+    const typing = tag === 'INPUT' || tag === 'TEXTAREA';
+    if (mod && e.key.toLowerCase() === 'k') { e.preventDefault(); this.setState((s) => ({ palette: !s.palette, pq: '', pIdx: 0 })); return; }
+    if (e.key === 'Escape') { this.setState({ palette: false, ac: false, ctx: null, hover: null }); return; }
+    if (typing) return;
+    if (mod && e.key.toLowerCase() === 'b' && e.shiftKey) { e.preventDefault(); this.runBuild(); return; }
+    if (mod && e.key.toLowerCase() === 'b') { e.preventDefault(); this.toggleSidebar(); return; }
+    if (mod && e.key.toLowerCase() === 'j') { e.preventDefault(); this.setState((s) => ({ termOpen: !s.termOpen })); return; }
+    if (mod && e.key.toLowerCase() === 'i') { e.preventDefault(); this.toggleAi(); return; }
+    if (mod && e.key.toLowerCase() === 'r') { e.preventDefault(); this.runApp(); return; }
+    if (e.ctrlKey && e.key === ' ') { e.preventDefault(); this.setState((s) => ({ ac: !s.ac, acIdx: 0 })); return; }
+    if (e.key === 'ArrowDown') { this.setState((s) => ({ cursor: Math.min(this.linesOf(s.active).length - 1, s.cursor + 1) })); }
+    if (e.key === 'ArrowUp') { this.setState((s) => ({ cursor: Math.max(0, s.cursor - 1) })); }
+  };
+
+  toggleSidebar = () => this.setState((p) => ({ sidebarOpen: !p.sidebarOpen, pinSidebar: !p.sidebarOpen, autoSidebar: false }));
+  toggleAi = () => this.setState((p) => ({ aiOpen: !p.aiOpen, pinAi: !p.aiOpen, autoAi: false }));
+
+  // ---------- helpers ----------
+  linesOf(file) { return (this.src[file] || '').split('\n'); }
+
+  lineOf(file, needle) {
+    const ls = this.linesOf(file);
+    for (let i = 0; i < ls.length; i++) if (ls[i].indexOf(needle) >= 0) return i;
+    return 0;
+  }
+
+  diagnostics() {
+    return [
+      { sev: 'error', file: 'server.iz', line: this.lineOf('server.iz', 'return move connection.finish()'), message: 'Cannot move `connection` while it is borrowed.', short: 'cannot move borrowed value', code: 'E0382', tag: 'borrowck' },
+      { sev: 'warning', file: 'models.iz', line: this.lineOf('models.iz', 'let copy = self.headers.clone()'), message: 'This allocation can be avoided.', short: 'clone is unnecessary here', code: 'W0119', tag: 'perf' },
+      { sev: 'info', file: 'main.iz', line: this.lineOf('main.iz', 'register_routes(server)'), message: 'Function can be executed concurrently.', short: 'can run as a task', code: 'I0044', tag: 'concurrency' }
+    ];
+  }
+
+  sevColor(sev) {
+    if (sev === 'error') return 'oklch(0.66 0.16 25)';
+    if (sev === 'warning') return 'oklch(0.80 0.12 80)';
+    return 'oklch(0.72 0.08 240)';
+  }
+
+  tokenColor(kind) {
+    return {
+      kw: 'oklch(0.78 0.10 300)',
+      type: 'oklch(0.84 0.08 200)',
+      fn: 'oklch(0.86 0.09 100)',
+      str: 'oklch(0.80 0.09 145)',
+      num: 'oklch(0.83 0.10 70)',
+      com: '#5b646c',
+      punct: '#7c858d',
+      id: '#d3d9de',
+      field: 'oklch(0.82 0.05 250)'
+    }[kind];
+  }
+
+  tokenize(text, key) {
+    const out = [];
+    const re = /(\/\/.*$)|("(?:[^"\\]|\\.)*")|(\b\d[\w.]*\b)|([A-Za-z_][A-Za-z0-9_]*)|(\s+)|([^\sA-Za-z0-9_])/g;
+    let m, i = 0;
+    while ((m = re.exec(text)) !== null) {
+      let kind = 'id';
+      const t = m[0];
+      if (m[1]) kind = 'com';
+      else if (m[2]) kind = 'str';
+      else if (m[3]) kind = 'num';
+      else if (m[4]) {
+        if (this.KW.indexOf(t) >= 0) kind = 'kw';
+        else if (/^[A-Z]/.test(t)) kind = 'type';
+        else if (text[re.lastIndex] === '(') kind = 'fn';
+        else if (text[m.index - 1] === '.') kind = 'field';
+      } else if (m[5]) kind = 'ws';
+      else kind = 'punct';
+      if (kind === 'ws') out.push(t);
+      else out.push(React.createElement('span', { key: key + '-' + (i++), style: { color: this.tokenColor(kind), fontStyle: kind === 'com' ? 'italic' : 'normal' } }, t));
+    }
+    return out;
+  }
+
+  plainLine(text, key) {
+    return [React.createElement('span', { key: key, style: { color: '#a9b2b9' } }, text)];
+  }
+
+  // ---------- actions ----------
+  toast(icon, title, sub, color) {
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.setState({ toast: { icon, title, sub, color } });
+    this.toastTimer = setTimeout(() => this.setState({ toast: null }), 3200);
+  }
+
+  openFile = (name) => {
+    this.setState((s) => ({
+      active: name,
+      view: 'editor',
+      tabs: s.tabs.indexOf(name) >= 0 ? s.tabs : s.tabs.concat([name]),
+      hover: null, ac: false, cursor: 0
+    }));
+  };
+
+  navigate = (file, line) => {
+    this.setState((s) => ({
+      active: file, view: 'editor', cursor: line, hover: null, ac: false,
+      tabs: s.tabs.indexOf(file) >= 0 ? s.tabs : s.tabs.concat([file])
+    }));
+    setTimeout(() => { if (this.codeEl) this.codeEl.scrollTop = Math.max(0, (line - 6) * this.LH); }, 20);
+  };
+
+  pushTerm(lines) {
+    this.setState((s) => ({ termLines: (s.termLines || this.initialTerm()).concat(lines) }));
+  }
+
+  initialTerm() {
+    const g = '#8b949e', ok = 'oklch(0.76 0.13 155)', w = '#dfe4e8', d = '#5e666d';
+    return [
+      { text: '❯ izvor build --release', c: w },
+      { text: '', c: g },
+      { text: 'Building izvor-server (release)', c: g },
+      { text: '  Parsing            ✓   11 ms', c: g },
+      { text: '  Type checking      ✓   96 ms', c: g },
+      { text: '  Borrow analysis    ✓   54 ms', c: g },
+      { text: '  Code generation    ✓  384 ms', c: g },
+      { text: '  Optimization       ✓  213 ms', c: g },
+      { text: '', c: g },
+      { text: 'Build completed in 0.82s', c: ok },
+      { text: '  Binary size        1.8 MB', c: d },
+      { text: '  Memory usage      14.2 MB', c: d },
+      { text: '', c: g }
+    ];
+  }
+
+  runBuild = () => {
+    if (this.state.building) return;
+    this.setState({ building: true, buildDone: false, stageIdx: -1, termOpen: true, termTab: 'Build', view: 'compiler' });
+    let i = 0;
+    const step = () => {
+      if (i >= this.stages.length) {
+        this.setState({ building: false, buildDone: true, stageIdx: this.stages.length - 1, stageSel: this.stages.length - 1 });
+        this.pushTerm([{ text: '❯ izvor build --release', c: '#dfe4e8' }, { text: 'Build completed in 0.82s · binary 1.8 MB', c: 'oklch(0.76 0.13 155)' }, { text: '', c: '#8b949e' }]);
+        this.toast('✓', 'Build succeeded', '0.82s · 1.8 MB · ARM64', 'oklch(0.76 0.13 155)');
+        return;
+      }
+      this.setState({ stageIdx: i, stageSel: i });
+      i++;
+      this.buildTimer = setTimeout(step, 230);
+    };
+    step();
+  };
+
+  runApp = () => {
+    this.setState({ running: true, termOpen: true, termTab: 'Terminal', view: 'editor' });
+    const g = '#8b949e', ok = 'oklch(0.76 0.13 155)';
+    this.pushTerm([
+      { text: '❯ izvor run', c: '#dfe4e8' },
+      { text: '', c: g },
+      { text: 'Starting izvor-server...', c: g }
+    ]);
+    setTimeout(() => this.pushTerm([
+      { text: '', c: g },
+      { text: 'Server listening on:', c: g },
+      { text: '  http://localhost:8080', c: 'oklch(0.82 0.09 200)' },
+      { text: '', c: g },
+      { text: '  Workers        8', c: g },
+      { text: '  Concurrency    enabled', c: ok },
+      { text: '', c: g }
+    ]), 420);
+    this.toast('▶', 'izvor-server running', 'http://localhost:8080', 'oklch(0.82 0.09 200)');
+  };
+
+  stopApp = () => {
+    if (!this.state.running && !this.state.debugging) return;
+    this.setState({ running: false, debugging: false });
+    this.pushTerm([{ text: 'Server stopped · 0 leaked tasks', c: '#8b949e' }, { text: '', c: '#8b949e' }]);
+  };
+
+  startDebug = () => {
+    this.setState({ debugging: true, running: true, sidebar: 'debug', sidebarOpen: true, termOpen: true, termTab: 'Terminal' });
+    this.pushTerm([
+      { text: '❯ izvor debug', c: '#dfe4e8' },
+      { text: 'Attached to izvor-server · 6 threads', c: '#8b949e' },
+      { text: 'Breakpoint hit: server.iz:' + (this.lineOf('server.iz', 'let user = await database.find_user') + 1) + ' in handle', c: 'oklch(0.80 0.12 80)' },
+      { text: '', c: '#8b949e' }
+    ]);
+    this.navigate('server.iz', this.lineOf('server.iz', 'let user = await database.find_user'));
+  };
+
+  sendAi = () => {
+    const text = (this.state.aiInput || '').trim();
+    if (!text) return;
+    this.setState((s) => ({ aiMsgs: s.aiMsgs.concat([{ role: 'user', text: text }, { role: 'ai', text: '', streaming: true }]), aiInput: '' }));
+    const full = 'Scanned 8 modules and the symbol index. ' + this.aiReply(text) + ' Nothing here violates the borrow checker, so the change is safe to apply.';
+    let i = 0;
+    const tick = () => {
+      i += 3;
+      this.setState((s) => {
+        const msgs = s.aiMsgs.slice();
+        const last = msgs[msgs.length - 1];
+        msgs[msgs.length - 1] = { role: 'ai', text: full.slice(0, i), streaming: i < full.length };
+        return { aiMsgs: msgs };
+      });
+      if (this.chatEl) this.chatEl.scrollTop = this.chatEl.scrollHeight;
+      if (i < full.length) this.streamTimer = setTimeout(tick, 16);
+    };
+    tick();
+  };
+
+  aiReply(q) {
+    const l = q.toLowerCase();
+    if (l.indexOf('test') >= 0) return 'tests/server_test.iz covers binding but not the concurrent path — I can add a suite that drives 500 simultaneous requests.';
+    if (l.indexOf('error') >= 0 || l.indexOf('borrow') >= 0) return 'The error at server.iz:42 moves `connection` while the write borrow is still live; deferring the move past `write` resolves it.';
+    if (l.indexOf('perf') >= 0 || l.indexOf('fast') >= 0) return 'Profiling shows 3.2 ms per request, dominated by the database await — a prepared-statement cache in database.iz is the cheapest win.';
+    return 'The relevant code is in server.iz and database.iz; the request loop is the only place that needs to change.';
+  }
+
+  applyDiff = () => {
+    if (this.state.applied) return;
+    this.src['server.iz'] = this.src['server.iz'].replace('await process_request(connection)', 'spawn process_request(connection)');
+    this.setState((s) => ({
+      applied: true,
+      dirty: Object.assign({}, s.dirty, { 'server.iz': true }),
+      active: 'server.iz', view: 'editor',
+      tabs: s.tabs.indexOf('server.iz') >= 0 ? s.tabs : s.tabs.concat(['server.iz']),
+      cursor: 0
+    }));
+    setTimeout(() => this.navigate('server.iz', this.lineOf('server.iz', 'spawn process_request(connection)')), 10);
+    this.toast('✓', 'Applied 1 change', 'server.iz · +3 −3 · borrow-check passed', 'oklch(0.76 0.13 155)');
+  };
+
+  rejectDiff = () => {
+    this.setState((s) => ({ aiMsgs: s.aiMsgs.map((m) => (m.diff ? Object.assign({}, m, { diff: false, text: m.text + ' Reverted — the sequential loop stays as it is.' }) : m)) }));
+    this.toast('⤫', 'Change rejected', 'server.iz unchanged', '#8b949e');
+  };
+
+  explainDiff = () => {
+    this.setState((s) => ({ aiMsgs: s.aiMsgs.concat([{ role: 'ai', text: '`spawn` moves the connection into a scheduler task instead of awaiting it inline. The loop then only owns the accept stream, so throughput scales with the 8 configured workers while the borrow checker still proves each connection is written to exactly once.' }]) }));
+  };
+
+  // ---------- drag ----------
+  startDrag(kind, e) {
+    e.preventDefault();
+    const sx = e.clientX, sy = e.clientY;
+    const s0 = kind === 'sidebar' ? this.state.sidebarW : kind === 'ai' ? this.state.aiW : this.state.termH;
+    const move = (ev) => {
+      if (kind === 'sidebar') this.setState({ sidebarW: Math.max(180, Math.min(420, s0 + (ev.clientX - sx))) });
+      else if (kind === 'ai') this.setState({ aiW: Math.max(280, Math.min(620, s0 - (ev.clientX - sx))) });
+      else this.setState({ termH: Math.max(120, Math.min(520, s0 - (ev.clientY - sy))) });
+    };
+    const up = () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  }
+
+  commands() {
+    return [
+      { label: 'Build Project', keys: '⌘⇧B', group: 'Compiler', icon: '⚙', run: this.runBuild },
+      { label: 'Run Project', keys: '⌘R', group: 'Run', icon: '▶', run: this.runApp },
+      { label: 'Debug Project', keys: '⌘⇧D', group: 'Run', icon: '◈', run: this.startDebug },
+      { label: 'Format Document', keys: '⌥⇧F', group: 'Editor', icon: '⌗', run: () => this.toast('⌗', 'Formatted', this.state.active + ' · 4-space indent', 'oklch(0.78 0.09 190)') },
+      { label: 'Find in Files', keys: '⌘⇧F', group: 'Search', icon: '⌕', run: () => this.setState({ sidebar: 'search', sidebarOpen: true, pinSidebar: true }) },
+      { label: 'Go to Definition', keys: 'F12', group: 'Navigate', icon: '→', run: () => this.navigate('server.iz', this.lineOf('server.iz', 'async fn handle')) },
+      { label: 'Find References', keys: '⇧F12', group: 'Navigate', icon: '⇄', run: () => this.setState({ sidebar: 'search', sidebarOpen: true, query: 'handle' }) },
+      { label: 'Run Tests', keys: '⌘U', group: 'Test', icon: '✓', run: () => { this.setState({ termOpen: true, termTab: 'Terminal' }); this.pushTerm([{ text: '❯ izvor test', c: '#dfe4e8' }, { text: '  server · 1 passed', c: 'oklch(0.76 0.13 155)' }, { text: '  routes · 1 passed', c: 'oklch(0.76 0.13 155)' }, { text: '2 passed in 0.14s', c: '#8b949e' }, { text: '', c: '#8b949e' }]); } },
+      { label: 'Git Commit', keys: '⌘↩', group: 'Source Control', icon: '⑂', run: () => this.setState({ sidebar: 'git', sidebarOpen: true }) },
+      { label: 'Open Terminal', keys: '⌘J', group: 'View', icon: '❯', run: () => this.setState({ termOpen: true, termTab: 'Terminal' }) },
+      { label: 'Toggle AI Assistant', keys: '⌘I', group: 'View', icon: '◧', run: this.toggleAi },
+      { label: 'Open Compiler Graph', keys: '⌘⇧C', group: 'Compiler', icon: '⬡', run: () => this.setState({ view: 'compiler' }) },
+      { label: 'Open Performance', keys: '⌘⇧P', group: 'View', icon: '◔', run: () => this.setState({ view: 'performance' }) },
+      { label: 'Extensions', keys: '⌘⇧X', group: 'View', icon: '▦', run: () => this.setState({ view: 'extensions', sidebar: 'ext', sidebarOpen: true }) },
+      { label: 'Settings', keys: '⌘,', group: 'Application', icon: '◍', run: () => this.setState({ view: 'settings' }) },
+      { label: 'Welcome Screen', keys: '', group: 'Application', icon: '◆', run: () => this.setState({ screen: 'welcome' }) }
+    ];
+  }
+
+  runCommand = (c) => { this.setState({ palette: false, pq: '' }); setTimeout(() => c.run(), 10); };
+
+  // ---------- render values ----------
+  renderVals() {
+    const s = this.state;
+    const st = s.settings;
+    const diags = this.diagnostics();
+    const errCount = diags.filter((d) => d.sev === 'error').length;
+    const warnCount = diags.filter((d) => d.sev === 'warning').length;
+    const infoCount = diags.filter((d) => d.sev === 'info').length;
+    const isIzvor = /\.iz$/.test(s.active);
+    const rawLines = this.linesOf(s.active);
+    const fileDiags = diags.filter((d) => d.file === s.active);
+
+    // folding: hide lines inside folded blocks
+    const hidden = {};
+    Object.keys(s.folded).forEach((k) => {
+      const start = parseInt(k, 10);
+      const base = (rawLines[start] || '').search(/\S/);
+      for (let i = start + 1; i < rawLines.length; i++) {
+        const t = rawLines[i];
+        if (t.trim() === '') { hidden[i] = true; continue; }
+        const ind = t.search(/\S/);
+        if (ind > base) hidden[i] = true; else break;
+      }
+    });
+
+    const lines = [];
+    rawLines.forEach((text, i) => {
+      if (hidden[i]) return;
+      const d = fileDiags.filter((x) => x.line === i)[0];
+      const isCur = i === s.cursor;
+      const opensBlock = /\{\s*$/.test(text);
+      const folded = !!s.folded[i];
+      const indent = Math.floor(((text.search(/\S/) < 0 ? 0 : text.search(/\S/))) / st.tabSize);
+      const guides = [];
+      for (let g = 1; g <= indent; g++) {
+        guides.push(React.createElement('span', { key: 'g' + g, style: { position: 'absolute', top: 0, bottom: 0, left: (g * st.tabSize * 7.8 - 0.5) + 'px', width: '1px', background: '#191d21' } }));
+      }
+      const content = isIzvor ? this.tokenize(text, 'l' + i) : this.plainLine(text, 'l' + i);
+      lines.push({
+        num: i + 1,
+        content: React.createElement('span', { style: { position: 'relative', display: 'inline-block', minWidth: '1px' } }, guides.concat(content)),
+        cursor: isCur,
+        hasDiag: !!d,
+        diagText: d ? '  ' + d.short : '',
+        diagStyle: d ? { marginLeft: '14px', fontSize: '11.5px', fontStyle: 'italic', color: this.sevColor(d.sev), opacity: 0.85 } : {},
+        row: {
+          display: 'flex', alignItems: 'flex-start', minHeight: this.LH + 'px', lineHeight: this.LH + 'px',
+          background: isCur ? 'rgba(255,255,255,0.032)' : (s.hover === i ? 'rgba(255,255,255,0.015)' : 'transparent'),
+          boxShadow: isCur ? 'inset 2px 0 0 oklch(0.70 0.10 190)' : 'none',
+          cursor: 'text'
+        },
+        numStyle: {
+          width: '52px', flex: 'none', textAlign: 'right', paddingRight: '12px', userSelect: 'none',
+          fontSize: '11.5px',
+          color: d ? this.sevColor(d.sev) : (isCur ? '#c6ccd2' : '#454d54')
+        },
+        foldStyle: { width: '16px', flex: 'none', textAlign: 'center', fontSize: '9px', color: folded ? 'oklch(0.80 0.10 190)' : '#4c545b', cursor: opensBlock ? 'pointer' : 'default', userSelect: 'none' },
+        foldIcon: opensBlock ? (folded ? '▸' : '▾') : '',
+        click: () => this.setState({ cursor: i, ac: false }),
+        enter: () => this.setState({ hover: i }),
+        leave: () => this.setState({ hover: null }),
+        fold: opensBlock ? ((e) => { e.stopPropagation(); this.setState((p) => { const f = Object.assign({}, p.folded); if (f[i]) delete f[i]; else f[i] = true; return { folded: f }; }); }) : null
+      });
+    });
+
+    const minimap = rawLines.map((t, i) => ({
+      style: {
+        height: '2px', marginBottom: '1.6px', borderRadius: '1px',
+        width: Math.max(2, Math.min(50, (t.trim().length || 0) * 1.05)) + 'px',
+        marginLeft: Math.min(18, (t.search(/\S/) < 0 ? 0 : t.search(/\S/)) * 1.4) + 'px',
+        background: i === s.cursor ? 'oklch(0.80 0.10 190)' : (fileDiags.some((d) => d.line === i) ? 'oklch(0.60 0.14 25)' : '#242a2f')
+      }
+    }));
+
+    const hoverLine = s.hover;
+    const hoverDiag = hoverLine === null ? null : fileDiags.filter((d) => d.line === hoverLine)[0];
+    const hoverText = hoverLine === null ? '' : (rawLines[hoverLine] || '');
+    const sig = /async fn handle/.test(hoverText) ? 'fn handle(request: Request) -> Task<Response>'
+      : /let user/.test(hoverText) ? 'let user: User'
+      : /spawn /.test(hoverText) ? 'spawn(task: Task<T>) -> Handle<T>'
+      : /connection/.test(hoverText) ? 'connection: Connection  (borrowed)'
+      : /let server/.test(hoverText) ? 'let server: Server'
+      : '';
+    const doc = /async fn handle/.test(hoverText) ? 'Resolves the user for a request. Suspends at the database await without blocking a worker thread.'
+      : /let user/.test(hoverText) ? 'Inferred from database.find_user, which returns User? — the `?` propagates the empty case to the caller.'
+      : /spawn /.test(hoverText) ? 'Moves a task onto the scheduler. Ownership transfers at the call, so nothing is shared across threads.'
+      : /connection/.test(hoverText) ? 'Owned by the accept loop. The write borrow must end before the value is moved.'
+      : 'Inferred by the type checker. No annotation required.';
+    const hoverOpen = s.view === 'editor' && hoverLine !== null && (!!sig || !!hoverDiag);
+
+    const activity = [
+      { id: 'explorer', icon: '▤', label: 'Explorer', key: '⌘B' },
+      { id: 'search', icon: '⌕', label: 'Search', key: '⌘⇧F' },
+      { id: 'git', icon: '⑂', label: 'Source Control', key: '⌃⇧G' },
+      { id: 'debug', icon: '▷', label: 'Run & Debug', key: '⌘⇧D' },
+      { id: 'ext', icon: '▦', label: 'Extensions', key: '⌘⇧X' }
+    ].map((a) => {
+      const on = s.sidebar === a.id && s.sidebarOpen;
+      return Object.assign({}, a, {
+        badge: a.id === 'git', badgeCount: 3,
+        hover: s.hoverAct === a.id,
+        style: {
+          position: 'relative', width: '32px', height: '32px', borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: on ? '#e6e9ec' : '#7d868e', background: on ? '#171b1f' : 'transparent', cursor: 'pointer', transition: 'background 0.12s, color 0.12s'
+        },
+        bar: { position: 'absolute', left: '-7px', top: '7px', bottom: '7px', width: '2px', borderRadius: '1px', background: on ? 'oklch(0.80 0.10 190)' : 'transparent' },
+        click: () => this.setState((p) => {
+          const open = p.sidebar === a.id ? !p.sidebarOpen : true;
+          return { sidebar: a.id, sidebarOpen: open, pinSidebar: open, autoSidebar: false, view: a.id === 'ext' ? 'extensions' : p.view };
+        }),
+        enter: () => this.setState({ hoverAct: a.id }),
+        leave: () => this.setState({ hoverAct: null })
+      });
+    });
+
+    const treeRows = [];
+    this.treeDef.forEach((n) => {
+      if (n.parent && !s.expanded[n.parent]) return;
+      if (s.filter && n.kind === 'file' && n.name.toLowerCase().indexOf(s.filter.toLowerCase()) < 0) return;
+      const on = n.kind === 'file' && s.active === n.name;
+      treeRows.push({
+        name: n.name,
+        chev: n.kind === 'folder' ? (s.expanded[n.name] ? '▾' : '▸') : '',
+        chevStyle: { width: '12px', flex: 'none', fontSize: '8px', color: '#6b747c', marginLeft: (n.depth * 12) + 'px' },
+        icon: n.kind === 'folder' ? '▣' : (/\.iz$/.test(n.name) ? '◆' : (/\.toml$/.test(n.name) ? '⚙' : '¶')),
+        iconStyle: { width: '14px', flex: 'none', fontSize: '10px', color: n.kind === 'folder' ? '#7d868e' : (/\.iz$/.test(n.name) ? 'oklch(0.76 0.09 190)' : '#7d868e') },
+        git: n.git || '',
+        gitStyle: { width: '12px', flex: 'none', textAlign: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: '10.5px', color: n.git === 'A' ? 'oklch(0.76 0.13 155)' : 'oklch(0.80 0.12 80)' },
+        style: {
+          display: 'flex', alignItems: 'center', gap: '7px', height: '25px', padding: '0 8px', borderRadius: '5px', cursor: 'pointer',
+          fontFamily: "'JetBrains Mono',monospace", fontSize: '12px',
+          color: on ? '#ffffff' : (n.kind === 'folder' ? '#c6ccd2' : '#a9b2b9'),
+          background: on ? '#1a2024' : 'transparent',
+          boxShadow: on ? 'inset 0 0 0 1px #262e33' : 'none'
+        },
+        click: () => { if (n.kind === 'folder') this.setState((p) => ({ expanded: Object.assign({}, p.expanded, { [n.name]: !p.expanded[n.name] }) })); else this.openFile(n.name); },
+        menu: (e) => { e.preventDefault(); this.setState({ ctx: { x: e.clientX, y: e.clientY, name: n.name } }); }
+      });
+    });
+
+    const q = s.query.trim();
+    const results = [];
+    if (q) {
+      Object.keys(this.src).forEach((f) => {
+        const hits = [];
+        this.linesOf(f).forEach((t, i) => {
+          if (t.toLowerCase().indexOf(q.toLowerCase()) >= 0) hits.push({ num: i + 1, text: t.trim(), click: () => this.navigate(f, i) });
+        });
+        if (hits.length) results.push({ file: f, count: hits.length, hits: hits.slice(0, 6) });
+      });
+    }
+    const totalHits = results.reduce((a, g) => a + g.count, 0);
+
+    const tabs = s.tabs.map((name) => {
+      const on = name === s.active && s.view === 'editor';
+      return {
+        name: name,
+        dirty: !!s.dirty[name],
+        clean: !s.dirty[name],
+        style: {
+          display: 'flex', alignItems: 'center', gap: '8px', padding: '0 11px 0 12px', height: '100%', cursor: 'pointer',
+          borderRight: '1px solid #1b2024', background: on ? '#0a0b0d' : 'transparent',
+          boxShadow: on ? 'inset 0 -1px 0 #0a0b0d, inset 0 2px 0 oklch(0.70 0.10 190)' : 'none',
+          maxWidth: '190px'
+        },
+        iconStyle: { fontSize: '9px', color: on ? 'oklch(0.78 0.09 190)' : '#5e666d' },
+        labelStyle: { fontFamily: "'JetBrains Mono',monospace", fontSize: '11.5px', color: on ? '#f0f3f5' : '#8b949c', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+        click: () => this.openFile(name),
+        close: (e) => { e.stopPropagation(); this.setState((p) => { const tabs = p.tabs.filter((t) => t !== name); return { tabs: tabs, active: p.active === name ? (tabs[0] || '') : p.active }; }); }
+      };
+    });
+
+    const crumbParts = ['izvor-server', /_test/.test(s.active) ? 'tests' : (/\.iz$/.test(s.active) ? 'src' : ''), s.active].filter(Boolean);
+    const symbol = isIzvor ? (rawLines[s.cursor] || '').trim().replace(/[{(].*$/, '').slice(0, 34) : '';
+    const crumbs = crumbParts.concat(symbol ? [symbol] : []).map((label, i, arr) => ({
+      label: (i > 0 ? '›  ' : '') + label,
+      style: { color: i === arr.length - 1 ? '#c6ccd2' : '#6b747c', whiteSpace: 'nowrap' }
+    }));
+
+    const pipeline = this.stages.map((st2, i) => {
+      const active = i === s.stageIdx && s.building;
+      const done = s.building ? i < s.stageIdx : s.buildDone;
+      const sel = i === s.stageSel;
+      return {
+        name: st2.name,
+        ms: done || active ? st2.ms : '—',
+        dot: done ? '✓' : (active ? '●' : String(i + 1)),
+        click: () => this.setState({ stageSel: i }),
+        style: {
+          display: 'flex', alignItems: 'center', gap: '11px', height: '34px', padding: '0 12px', borderRadius: '7px', cursor: 'pointer',
+          background: sel ? '#12171a' : 'transparent', boxShadow: sel ? 'inset 0 0 0 1px #212a2e' : 'none', transition: 'background 0.15s'
+        },
+        dotStyle: {
+          width: '20px', height: '20px', flex: 'none', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontFamily: "'JetBrains Mono',monospace", fontSize: '9.5px',
+          border: '1px solid ' + (active ? 'oklch(0.80 0.10 190)' : (done ? 'oklch(0.50 0.09 160)' : '#262c32')),
+          color: active ? 'oklch(0.86 0.10 190)' : (done ? 'oklch(0.76 0.13 155)' : '#5e666d'),
+          background: active ? 'oklch(0.30 0.05 195)' : 'transparent',
+          animation: active ? 'vpulse 1s ease-in-out infinite' : 'none'
+        },
+        nameStyle: { fontFamily: "'JetBrains Mono',monospace", fontSize: '11.5px', letterSpacing: '0.06em', color: active || done ? '#e0e4e8' : '#7d868e' },
+        msStyle: { fontFamily: "'JetBrains Mono',monospace", fontSize: '10.5px', color: '#5e666d' },
+        connector: i < this.stages.length - 1,
+        connStyle: { width: '1px', height: '10px', marginLeft: '22px', background: done ? 'oklch(0.45 0.07 165)' : '#20262a' }
+      };
+    });
+    const detailStage = this.stages[s.stageSel] || this.stages[0];
+    const detail = {
+      name: detailStage.name,
+      blurb: detailStage.blurb,
+      output: detailStage.output,
+      rows: detailStage.rows.map((r) => ({
+        k: r[0], v: r[1],
+        valStyle: { fontFamily: "'JetBrains Mono',monospace", fontSize: '17px', marginTop: '8px', letterSpacing: '-0.01em', color: /^0 /.test(r[1]) || /^0$/.test(r[1]) ? 'oklch(0.76 0.13 155)' : '#e9ecef' }
+      }))
+    };
+
+    const cpu = s.cpuSeries[s.cpuSeries.length - 1];
+    const metrics = [
+      { k: 'CPU', v: String(cpu), u: '%', pct: cpu, color: 'oklch(0.78 0.10 190)' },
+      { k: 'Memory', v: '42', u: 'MB', pct: 34, color: 'oklch(0.72 0.09 285)' },
+      { k: 'Threads', v: '6', u: 'active', pct: 75, color: 'oklch(0.78 0.10 190)' },
+      { k: 'Compilation', v: '0.82', u: 's', pct: 41, color: 'oklch(0.76 0.13 155)' },
+      { k: 'Runtime', v: '3.2', u: 'ms/req', pct: 22, color: 'oklch(0.76 0.13 155)' },
+      { k: 'Allocations', v: '142', u: 'live', pct: 18, color: 'oklch(0.80 0.12 80)' }
+    ].map((m) => Object.assign({}, m, { barStyle: { height: '100%', width: m.pct + '%', borderRadius: '2px', background: m.color, transition: 'width 0.6s cubic-bezier(0.16,1,0.3,1)' } }));
+
+    const pts = s.cpuSeries.map((v, i) => (i * (600 / 39)) + ',' + (54 - (v / 100) * 48)).join(' ');
+    const sparkline = React.createElement('svg', { viewBox: '0 0 600 58', preserveAspectRatio: 'none', style: { width: '100%', height: '58px', display: 'block' } },
+      React.createElement('polyline', { points: pts, fill: 'none', stroke: 'oklch(0.78 0.10 190)', strokeWidth: '1.4', vectorEffect: 'non-scaling-stroke' }),
+      React.createElement('polyline', { points: '0,58 ' + pts + ' 600,58', fill: 'oklch(0.78 0.10 190 / 0.09)', stroke: 'none' })
+    );
+
+    const taskDefs = [
+      ['Request 001', 'thread 0', 2, 26, 8],
+      ['Request 002', 'thread 1', 4, 20, 6],
+      ['Request 003', 'thread 2', 5, 30, 11],
+      ['Request 004', 'thread 3', 9, 14, 4],
+      ['Request 005', 'thread 4', 11, 26, 9],
+      ['Request 006', 'thread 5', 14, 18, 5],
+      ['Request 007', 'thread 0', 29, 9, 3],
+      ['Request 008', 'thread 1', 25, 13, 4]
+    ];
+    const tasks = taskDefs.map((t) => ({
+      label: t[0], thread: t[1], dur: t[3] + '.' + ((t[4] * 3) % 10) + ' ms',
+      barStyle: { position: 'absolute', top: 0, bottom: 0, left: (t[2] / 40 * 100) + '%', width: (t[3] / 40 * 100) + '%', borderRadius: '3px', background: 'oklch(0.72 0.10 190)', opacity: 0.9 },
+      awaitStyle: { position: 'absolute', top: 0, bottom: 0, left: ((t[2] + t[3] * 0.45) / 40 * 100) + '%', width: (t[4] / 40 * 100) + '%', borderRadius: '3px', background: 'oklch(0.68 0.09 285)' }
+    }));
+
+    const settingCats = ['Editor', 'Appearance', 'Language', 'Compiler', 'Formatting', 'AI', 'Git', 'Keybindings', 'Extensions'].map((c) => ({
+      name: c,
+      click: () => this.setState({ settingsTab: c }),
+      style: {
+        padding: '7px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12.5px',
+        color: s.settingsTab === c ? '#f0f3f5' : '#8b949c', background: s.settingsTab === c ? '#14181c' : 'transparent'
+      }
+    }));
+
+    const toggle = (on, fn) => React.createElement('div', {
+      onClick: fn,
+      style: { width: '38px', height: '22px', borderRadius: '11px', padding: '2px', cursor: 'pointer', background: on ? 'oklch(0.62 0.09 190)' : '#242a2f', transition: 'background 0.18s' }
+    }, React.createElement('div', { style: { width: '18px', height: '18px', borderRadius: '50%', background: on ? '#04141a' : '#8b949c', transform: on ? 'translateX(16px)' : 'none', transition: 'transform 0.18s cubic-bezier(0.16,1,0.3,1)' } }));
+
+    const stepper = (val, unit, fn) => React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', fontFamily: "'JetBrains Mono',monospace", fontSize: '12px', color: '#e6e9ec' } },
+      React.createElement('div', { onClick: () => fn(-1), style: { width: '22px', height: '22px', borderRadius: '5px', border: '1px solid #262c32', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' } }, '−'),
+      React.createElement('span', { style: { minWidth: '38px', textAlign: 'center' } }, val + (unit || '')),
+      React.createElement('div', { onClick: () => fn(1), style: { width: '22px', height: '22px', borderRadius: '5px', border: '1px solid #262c32', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' } }, '+')
+    );
+
+    const seg = (opts, val, fn) => React.createElement('div', { style: { display: 'flex', gap: '2px', padding: '2px', background: '#0b0d0f', border: '1px solid #23282d', borderRadius: '7px' } },
+      opts.map((o) => React.createElement('div', {
+        key: o, onClick: () => fn(o),
+        style: { padding: '4px 10px', borderRadius: '5px', cursor: 'pointer', fontSize: '11.5px', fontFamily: "'JetBrains Mono',monospace", color: val === o ? '#04141a' : '#9aa3ab', background: val === o ? 'oklch(0.80 0.10 190)' : 'transparent' }
+      }, o))
+    );
+
+    const setS = (patch) => this.setState((p) => ({ settings: Object.assign({}, p.settings, patch) }));
+    const rowDefs = {
+      Editor: [
+        ['Font size', 'Editor and minimap scale together.', stepper(st.fontSize, 'px', (d) => setS({ fontSize: Math.max(10, Math.min(20, st.fontSize + d)) }))],
+        ['Tab size', 'Izvor’s formatter emits 4 spaces by default.', stepper(st.tabSize, '', (d) => setS({ tabSize: Math.max(2, Math.min(8, st.tabSize + d)) }))],
+        ['Word wrap', 'Soft-wrap long lines at the viewport edge.', toggle(st.wrap, () => setS({ wrap: !st.wrap }))],
+        ['Minimap', 'Show the document overview on the right.', toggle(st.minimap, () => setS({ minimap: !st.minimap }))],
+        ['Format on save', 'Runs izvor fmt before writing to disk.', toggle(st.formatOnSave, () => setS({ formatOnSave: !st.formatOnSave }))]
+      ],
+      Appearance: [
+        ['Theme', 'Dark is the default Izvor Studio appearance.', seg(['Izvor Dark', 'Izvor Light'], st.theme, (v) => setS({ theme: v }))],
+        ['Minimap', 'Show the document overview on the right.', toggle(st.minimap, () => setS({ minimap: !st.minimap }))]
+      ],
+      Compiler: [
+        ['Optimization', 'Applied to release builds only.', seg(['none', 'size', 'speed'], st.opt, (v) => setS({ opt: v }))],
+        ['Target architecture', 'Cross compilation needs no extra toolchain.', seg(['Apple Silicon', 'x86_64', 'ARM64 Linux', 'WebAssembly'], st.target, (v) => setS({ target: v }))]
+      ],
+      AI: [
+        ['Model', 'Used for inline completion and agent edits.', seg(['Izvor AI · agent', 'Izvor AI · fast'], st.model, (v) => setS({ model: v }))],
+        ['Telemetry', 'Share anonymized diagnostics with the toolchain team.', toggle(st.telemetry, () => setS({ telemetry: !st.telemetry }))]
+      ]
+    };
+    const rows = rowDefs[s.settingsTab] || [
+      ['Coming from izvor.toml', 'This section is driven by the project manifest.', seg(['project', 'user'], 'project', () => {})],
+      ['Format on save', 'Runs izvor fmt before writing to disk.', toggle(st.formatOnSave, () => setS({ formatOnSave: !st.formatOnSave }))]
+    ];
+    const settingRows = rows.map((r, i) => ({
+      label: r[0], help: r[1], control: r[2],
+      rowStyle: { display: 'flex', alignItems: 'center', gap: '20px', padding: '15px 16px', borderBottom: i === rows.length - 1 ? 'none' : '1px solid #191d21', background: '#0e1114' }
+    }));
+
+    const pq = s.pq.trim().toLowerCase();
+    const cmds = this.commands().filter((c) => !pq || c.label.toLowerCase().indexOf(pq) >= 0 || c.group.toLowerCase().indexOf(pq) >= 0);
+    const paletteItems = cmds.map((c, i) => ({
+      label: c.label, keys: c.keys, group: c.group, icon: c.icon,
+      style: { display: 'flex', alignItems: 'center', gap: '12px', height: '38px', padding: '0 11px', borderRadius: '7px', cursor: 'pointer', background: i === s.pIdx ? '#1a2024' : 'transparent' },
+      iconStyle: { width: '20px', textAlign: 'center', color: i === s.pIdx ? 'oklch(0.82 0.09 190)' : '#7d868e', fontSize: '12px' },
+      click: () => this.runCommand(c),
+      enter: () => this.setState({ pIdx: i })
+    }));
+
+    const problems = diags.map((d) => ({
+      message: d.message, code: d.code, tag: d.tag,
+      where: d.file + ':' + (d.line + 1),
+      icon: d.sev === 'error' ? '⊗' : (d.sev === 'warning' ? '⚠' : 'ⓘ'),
+      iconStyle: { color: this.sevColor(d.sev), fontSize: '12px', marginTop: '1px' },
+      tagStyle: { fontFamily: "'JetBrains Mono',monospace", fontSize: '10px', letterSpacing: '0.06em', color: this.sevColor(d.sev), border: '1px solid ' + this.sevColor(d.sev), opacity: 0.75, padding: '2px 6px', borderRadius: '4px' },
+      style: { display: 'flex', gap: '11px', padding: '9px 11px', borderRadius: '7px', cursor: 'pointer', alignItems: 'flex-start' },
+      click: () => { this.navigate(d.file, d.line); }
+    }));
+
+    const buildRows = this.stages.map((st2, i) => {
+      const active = s.building && i === s.stageIdx;
+      const done = s.building ? i < s.stageIdx : s.buildDone;
+      return {
+        name: st2.name.toLowerCase(),
+        nameStyle: { width: '150px', flex: 'none', color: done || active ? '#c6ccd2' : '#5e666d' },
+        mark: done ? '✓' : (active ? '◍' : '·'),
+        markStyle: { width: '14px', color: done ? 'oklch(0.76 0.13 155)' : (active ? 'oklch(0.82 0.09 190)' : '#3f464c'), animation: active ? 'vpulse 0.9s ease-in-out infinite' : 'none' },
+        ms: done || active ? st2.ms : ''
+      };
+    });
+
+    const aiMsgs = s.aiMsgs.map((m) => ({
+      text: m.text,
+      isUser: m.role === 'user',
+      isAi: m.role === 'ai',
+      streaming: !!m.streaming,
+      isPlan: !!m.plan,
+      steps: (m.plan || []).map((p) => ({
+        text: p.text,
+        dot: p.done || s.applied ? '✓' : '◍',
+        dotStyle: { flex: 'none', width: '10px', lineHeight: '18px', color: p.done || s.applied ? 'oklch(0.76 0.13 155)' : 'oklch(0.82 0.09 190)', fontSize: '10px' }
+      })),
+      isDiff: !!m.diff,
+      range: 'L' + (this.lineOf('server.iz', 'async fn serve_batch') + 1) + '–' + (this.lineOf('server.iz', 'async fn serve_batch') + 5),
+      wrapStyle: { display: 'flex', flexDirection: 'column' },
+      diff: [
+        { sign: '', num: 47, text: 'async fn serve_batch(server: Server) {' },
+        { sign: '', num: 48, text: '    for connection in server.accept() {' },
+        { sign: '-', num: 49, text: '        await process_request(connection)' },
+        { sign: '+', num: 49, text: '        spawn process_request(connection)' },
+        { sign: '', num: 50, text: '    }' },
+        { sign: '', num: 51, text: '}' }
+      ].map((d) => ({
+        num: d.num, sign: d.sign || ' ', text: d.text,
+        signStyle: { width: '12px', flex: 'none', color: d.sign === '+' ? 'oklch(0.76 0.13 155)' : (d.sign === '-' ? 'oklch(0.66 0.16 25)' : '#4c545b') },
+        style: {
+          display: 'flex', padding: '0 8px',
+          background: d.sign === '+' ? 'oklch(0.55 0.10 155 / 0.13)' : (d.sign === '-' ? 'oklch(0.55 0.14 25 / 0.12)' : 'transparent'),
+          color: d.sign === '+' ? '#cfe6d8' : (d.sign === '-' ? '#e8cdcd' : '#8b949c')
+        }
+      }))
+    }));
+
+    const btn = (bg, color, extra) => Object.assign({
+      height: '26px', padding: '0 11px', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '6px', cursor: 'pointer',
+      fontSize: '11.5px', fontWeight: 500, background: bg, color: color, border: '1px solid transparent', transition: 'background 0.14s, transform 0.1s'
+    }, extra || {});
+
+    const ctxItems = [
+      { label: 'Open', keys: '⏎' }, { label: 'Open to the Side', keys: '⌥⏎' }, { label: 'Reveal in Finder', keys: '' },
+      { label: 'Rename…', keys: 'F2' }, { label: 'Duplicate', keys: '⌘D' }, { label: 'Go to Definition', keys: 'F12' }, { label: 'Delete', keys: '⌫' }
+    ].map((i) => ({
+      label: i.label, keys: i.keys,
+      style: { display: 'flex', alignItems: 'center', gap: '18px', padding: '6px 10px', borderRadius: '5px', cursor: 'pointer', fontSize: '12.5px', color: i.label === 'Delete' ? 'oklch(0.70 0.14 25)' : '#d3d9de' },
+      click: () => { this.setState({ ctx: null }); if (i.label === 'Open' && s.ctx) this.openFile(s.ctx.name); }
+    }));
+
+    const winW = s.winW || (typeof window !== 'undefined' ? window.innerWidth : 1440);
+    const centerW = winW - 46 - (s.sidebarOpen ? s.sidebarW : 0) - (s.aiOpen ? s.aiW : 0);
+    const centerNarrow = centerW < 760;
+
+    const runningLabel = s.debugging ? 'debugging · paused at breakpoint' : (s.running ? 'running · 8 workers' : 'idle');
+
+    return {
+      // screens
+      isWelcome: s.screen === 'welcome',
+      isNew: s.screen === 'new',
+      goIde: () => this.setState({ screen: 'ide' }),
+      goWelcome: () => this.setState({ screen: 'welcome' }),
+      goNewProject: () => this.setState({ screen: 'new' }),
+      recents: [
+        { name: 'izvor-server', path: '~/dev/izvor-server', when: '2m ago' },
+        { name: 'izvor-runtime', path: '~/dev/izvor-runtime', when: 'yesterday' },
+        { name: 'distributed-chat', path: '~/dev/distributed-chat', when: '3d ago' },
+        { name: 'compiler-playground', path: '~/scratch/compiler-playground', when: 'last week' }
+      ].map((r) => Object.assign({}, r, { click: () => this.setState({ screen: 'ide' }) })),
+      whatsNew: [
+        { tag: '01', title: 'Deterministic task scheduler', body: 'spawn now guarantees FIFO wake order per worker, making concurrent tests reproducible.' },
+        { tag: '02', title: 'Borrow checker explanations', body: 'Every ownership error carries the region that caused it and a suggested rewrite.' },
+        { tag: '03', title: 'Agent-native project index', body: 'The symbol graph is exposed to Izvor AI so edits reference real definitions, not guesses.' },
+        { tag: '04', title: 'ARM64 codegen — 18% faster', body: 'Better register allocation across suspension points in async state machines.' }
+      ],
+      templates: this.templatesDef.map((t) => ({
+        name: t.name, desc: t.desc, mark: t.mark,
+        click: () => this.setState({ npTemplate: t.name }),
+        style: {
+          padding: '15px', borderRadius: '10px', cursor: 'pointer',
+          background: s.npTemplate === t.name ? '#101418' : '#0d1013',
+          border: '1px solid ' + (s.npTemplate === t.name ? 'oklch(0.55 0.09 195)' : '#1c2126'),
+          transition: 'border-color 0.14s, background 0.14s'
+        },
+        markStyle: { width: '30px', height: '30px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', background: s.npTemplate === t.name ? 'oklch(0.35 0.06 195)' : '#161b1f', color: s.npTemplate === t.name ? 'oklch(0.86 0.10 190)' : '#8b949c' }
+      })),
+      targets: ['Apple Silicon', 'x86_64', 'ARM64 Linux', 'WebAssembly'].map((t) => ({
+        name: t, click: () => this.setState({ npTarget: t }),
+        style: { padding: '5px 10px', borderRadius: '6px', cursor: 'pointer', fontFamily: "'JetBrains Mono',monospace", fontSize: '11.5px', border: '1px solid ' + (s.npTarget === t ? 'oklch(0.55 0.09 195)' : '#23282d'), color: s.npTarget === t ? '#e6e9ec' : '#9aa3ab', background: s.npTarget === t ? '#121a1d' : 'transparent' }
+      })),
+      versions: ['1.4', '1.3', '1.2 (LTS)'].map((v) => ({
+        name: v, click: () => this.setState({ npVersion: v }),
+        style: { padding: '5px 10px', borderRadius: '6px', cursor: 'pointer', fontFamily: "'JetBrains Mono',monospace", fontSize: '11.5px', border: '1px solid ' + (s.npVersion === v ? 'oklch(0.55 0.09 195)' : '#23282d'), color: s.npVersion === v ? '#e6e9ec' : '#9aa3ab', background: s.npVersion === v ? '#121a1d' : 'transparent' }
+      })),
+      npName: s.npName, npTarget: s.npTarget, npVersion: s.npVersion,
+      onNpName: (e) => this.setState({ npName: e.target.value }),
+
+      // chrome
+      activeFile: s.active,
+      titlePathStyle: { display: winW < 1120 ? 'none' : 'flex', alignItems: 'center', gap: '7px', minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap', fontFamily: "'JetBrains Mono',monospace", fontSize: '11.5px', color: '#9aa3ab' },
+      titleTargetStyle: { display: winW < 1000 ? 'none' : 'flex', alignItems: 'center', gap: '8px', flex: 'none', padding: '4px 9px', background: '#0c0e10', border: '1px solid #21262b', borderRadius: '7px', fontFamily: "'JetBrains Mono',monospace", fontSize: '11px', color: '#9aa3ab' },
+      target: st.target,
+      tabSize: st.tabSize,
+      cpu: cpu,
+      statusOptionalStyle: { display: winW < 1040 ? 'none' : 'inline' },
+      cursorLabel: 'Ln ' + (s.cursor + 1) + ', Col ' + (((rawLines[s.cursor] || '').search(/\S/) + 1) || 1),
+      runStatusText: runningLabel,
+      runStatusStyle: { color: s.debugging ? 'oklch(0.80 0.12 80)' : (s.running ? 'oklch(0.76 0.13 155)' : '#5e666d') },
+      errCount: errCount, warnCount: warnCount, infoCount: infoCount, hasDiag: fileDiags.length > 0,
+      buildLabel: s.building ? 'Building…' : 'Build',
+      buildTime: '0.82s',
+      onRun: this.runApp, onDebug: this.startDebug, onStop: this.stopApp, onBuild: this.runBuild,
+      runBtnStyle: btn(s.running && !s.debugging ? 'oklch(0.34 0.06 160)' : 'transparent', s.running && !s.debugging ? 'oklch(0.86 0.11 160)' : '#c6ccd2'),
+      debugBtnStyle: btn(s.debugging ? 'oklch(0.36 0.07 80)' : 'transparent', s.debugging ? 'oklch(0.88 0.11 85)' : '#c6ccd2'),
+      stopBtnStyle: btn('transparent', s.running ? '#e0b4b4' : '#5e666d', { padding: '0 9px' }),
+      buildBtnStyle: btn(s.building ? 'oklch(0.34 0.05 195)' : '#0f1215', s.building ? 'oklch(0.88 0.09 190)' : '#dfe4e8', { border: '1px solid ' + (s.building ? 'oklch(0.50 0.08 195)' : '#21262b'), height: '28px' }),
+      bigBuildStyle: Object.assign(btn(s.building ? 'oklch(0.34 0.05 195)' : 'oklch(0.80 0.10 190)', s.building ? 'oklch(0.90 0.09 190)' : '#04141a'), { height: '30px', padding: '0 16px', fontWeight: 600, fontSize: '12px' }),
+      tgSidebar: { width: '26px', height: '24px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', color: s.sidebarOpen ? '#e6e9ec' : '#6b747c', background: s.sidebarOpen ? '#181c20' : 'transparent' },
+      tgTerm: { width: '26px', height: '24px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', color: s.termOpen ? '#e6e9ec' : '#6b747c', background: s.termOpen ? '#181c20' : 'transparent' },
+      tgAi: { width: '26px', height: '24px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', color: s.aiOpen ? '#e6e9ec' : '#6b747c', background: s.aiOpen ? '#181c20' : 'transparent' },
+      tgPalette: { width: '26px', height: '24px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '11px', color: '#6b747c' },
+      toggleSidebar: this.toggleSidebar,
+      toggleTerm: () => this.setState((p) => ({ termOpen: !p.termOpen })),
+      toggleAi: this.toggleAi,
+      openPalette: () => this.setState({ palette: true, pq: '', pIdx: 0 }),
+      openSettings: () => this.setState({ view: 'settings' }),
+      openCompiler: () => this.setState({ view: 'compiler' }),
+      openPerf: () => this.setState({ view: 'performance' }),
+      openExtensions: () => this.setState({ view: 'extensions' }),
+      openProblems: () => this.setState({ termOpen: true, termTab: 'Problems' }),
+      openGit: () => this.setState({ sidebar: 'git', sidebarOpen: true }),
+      splitEditor: () => this.toast('◫', 'Split editor', 'Two panes · ' + s.active, 'oklch(0.78 0.09 190)'),
+      newFile: () => this.toast('＋', 'New file', 'src/ · untitled.iz', 'oklch(0.78 0.09 190)'),
+      stop: (e) => e.stopPropagation(),
+
+      // panels
+      activity: activity,
+      sidebarOpen: s.sidebarOpen,
+      sidebarStyle: { width: s.sidebarW + 'px', flex: 'none', display: 'flex', flexDirection: 'column', background: '#0d0f11', borderRight: '1px solid #1b2024', minWidth: 0 },
+      sidebarTitle: { explorer: 'Explorer', search: 'Search', git: 'Source Control', debug: 'Run & Debug', ext: 'Extensions' }[s.sidebar],
+      sbExplorer: s.sidebar === 'explorer', sbSearch: s.sidebar === 'search', sbGit: s.sidebar === 'git', sbDebug: s.sidebar === 'debug', sbExt: s.sidebar === 'ext',
+      tree: treeRows,
+      filter: s.filter,
+      onFilter: (e) => this.setState({ filter: e.target.value }),
+      query: s.query,
+      onQuery: (e) => this.setState({ query: e.target.value }),
+      results: results,
+      searchSummary: q ? totalHits + ' results in ' + results.length + ' files' : 'type to search',
+      gitMsg: s.gitMsg,
+      onGitMsg: (e) => this.setState({ gitMsg: e.target.value }),
+      onCommit: () => { if (!s.gitMsg.trim()) return; this.setState({ gitMsg: '' }); this.toast('⑂', 'Committed to main', '3 files changed · ' + s.gitMsg.trim().slice(0, 32), 'oklch(0.76 0.13 155)'); },
+      commitBtnStyle: { marginTop: '8px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '7px', cursor: s.gitMsg.trim() ? 'pointer' : 'default', fontSize: '12.5px', fontWeight: 600, background: s.gitMsg.trim() ? 'oklch(0.80 0.10 190)' : '#161b1f', color: s.gitMsg.trim() ? '#04141a' : '#5e666d' },
+      changeCount: 3,
+      changes: [
+        { tag: 'M', name: 'server.iz', stat: '+3 −3' },
+        { tag: 'M', name: 'main.iz', stat: '+2 −0' },
+        { tag: 'A', name: 'database.iz', stat: '+11' }
+      ].map((c) => ({
+        tag: c.tag, name: c.name, stat: c.stat,
+        tagStyle: { width: '12px', color: c.tag === 'A' ? 'oklch(0.76 0.13 155)' : 'oklch(0.80 0.12 80)' },
+        click: () => this.openFile(c.name)
+      })),
+      debugStateStyle: { marginTop: '10px', padding: '8px 10px', borderRadius: '7px', fontFamily: "'JetBrains Mono',monospace", fontSize: '11px', background: s.debugging ? 'oklch(0.30 0.05 80 / 0.35)' : '#0f1215', border: '1px solid ' + (s.debugging ? 'oklch(0.45 0.07 80)' : '#1c2126'), color: s.debugging ? 'oklch(0.86 0.11 85)' : '#6b747c' },
+      debugStateText: s.debugging ? 'paused · breakpoint server.iz:' + (this.lineOf('server.iz', 'let user = await database.find_user') + 1) : 'no active session',
+      debugSections: [
+        { title: 'BREAKPOINTS', meta: '2', rows: [
+          { label: 'server.iz:' + (this.lineOf('server.iz', 'let user = await database.find_user') + 1), meta: 'handle', dot: '●', color: 'oklch(0.66 0.16 25)', file: 'server.iz', line: this.lineOf('server.iz', 'let user = await database.find_user') },
+          { label: 'database.iz:' + (this.lineOf('database.iz', 'let row = await pool.query_one') + 1), meta: 'find_user', dot: '●', color: 'oklch(0.66 0.16 25)', file: 'database.iz', line: this.lineOf('database.iz', 'let row = await pool.query_one') }
+        ] },
+        { title: 'CALL STACK', meta: 'thread 0', rows: [
+          { label: 'handle', meta: 'server.iz:' + (this.lineOf('server.iz', 'let user = await database.find_user') + 1), dot: '▸', color: 'oklch(0.82 0.09 190)', file: 'server.iz', line: this.lineOf('server.iz', 'let user = await database.find_user') },
+          { label: 'process_request', meta: 'server.iz:' + (this.lineOf('server.iz', 'let response = await handle(request)') + 1), dot: '·', color: '#5e666d', file: 'server.iz', line: this.lineOf('server.iz', 'let response = await handle(request)') },
+          { label: 'start_server', meta: 'server.iz:' + (this.lineOf('server.iz', 'spawn handle(request)') + 1), dot: '·', color: '#5e666d', file: 'server.iz', line: this.lineOf('server.iz', 'spawn handle(request)') },
+          { label: 'main', meta: 'main.iz:' + (this.lineOf('main.iz', 'start_server(server)') + 1), dot: '·', color: '#5e666d', file: 'main.iz', line: this.lineOf('main.iz', 'start_server(server)') }
+        ] },
+        { title: 'VARIABLES', meta: '3', rows: [
+          { label: 'request', meta: 'Request', dot: '◆', color: 'oklch(0.72 0.08 240)' },
+          { label: 'user', meta: 'User?', dot: '◆', color: 'oklch(0.72 0.08 240)' },
+          { label: 'connection', meta: 'Connection', dot: '◆', color: 'oklch(0.72 0.08 240)' }
+        ] },
+        { title: 'WATCH', meta: '1', rows: [{ label: 'server.workers', meta: '8', dot: '◇', color: '#7d868e' }] },
+        { title: 'THREADS', meta: '6 active', rows: [
+          { label: 'thread 0 · handling', meta: 'paused', dot: '●', color: 'oklch(0.80 0.12 80)' },
+          { label: 'thread 1 · handling', meta: 'running', dot: '●', color: 'oklch(0.76 0.13 155)' },
+          { label: 'thread 2–5 · scheduler', meta: 'running', dot: '●', color: 'oklch(0.76 0.13 155)' }
+        ] }
+      ].map((sec) => ({
+        title: sec.title, meta: sec.meta, open: !!s.dbgOpen[sec.title],
+        chevStyle: { fontSize: '8px', transform: s.dbgOpen[sec.title] ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' },
+        toggle: () => this.setState((p) => ({ dbgOpen: Object.assign({}, p.dbgOpen, { [sec.title]: !p.dbgOpen[sec.title] }) })),
+        rows: sec.rows.map((r) => ({
+          label: r.label, meta: r.meta, dot: r.dot,
+          dotStyle: { width: '12px', flex: 'none', fontSize: '9px', color: r.color },
+          style: { display: 'flex', alignItems: 'center', gap: '7px', padding: '4px 8px', borderRadius: '5px', cursor: r.file ? 'pointer' : 'default', fontFamily: "'JetBrains Mono',monospace", fontSize: '11.5px', color: '#c6ccd2' },
+          click: r.file ? (() => this.navigate(r.file, r.line)) : (() => {})
+        }))
+      })),
+      installedExts: this.extensionsDef.filter((e) => e.installed).map((e) => ({
+        name: e.name, publisher: e.publisher, mark: e.mark,
+        iconStyle: { width: '28px', height: '28px', flex: 'none', borderRadius: '7px', background: '#161b1f', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c6ccd2', fontSize: '12px' }
+      })),
+
+      // editor
+      viewEditor: s.view === 'editor', viewCompiler: s.view === 'compiler', viewPerf: s.view === 'performance', viewSettings: s.view === 'settings', viewExt: s.view === 'extensions',
+      tabs: tabs, crumbs: crumbs, lines: lines, minimap: minimap, minimapOn: st.minimap && centerW > 620,
+      minimapViewport: { position: 'absolute', left: 0, right: 0, top: Math.max(8, (s.cursor - 12) * 3.6 + 10) + 'px', height: '130px', background: 'rgba(255,255,255,0.035)', borderTop: '1px solid #1f252a', borderBottom: '1px solid #1f252a', pointerEvents: 'none' },
+      codeRef: (el) => { this.codeEl = el; },
+      hoverOpen: hoverOpen,
+      hoverSig: sig || (hoverDiag ? hoverDiag.short : ''),
+      hoverDoc: doc,
+      hoverHasDiag: !!hoverDiag,
+      hoverDiagText: hoverDiag ? hoverDiag.code + ' · ' + hoverDiag.message : '',
+      hoverDiagStyle: hoverDiag ? { marginTop: '9px', padding: '8px 10px', borderRadius: '6px', fontSize: '11.5px', lineHeight: 1.55, color: this.sevColor(hoverDiag.sev), background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' } : {},
+      hoverStyle: {
+        position: 'absolute', left: '90px', top: Math.max(0, (hoverLine || 0) * this.LH + 34) + 'px', zIndex: 30,
+        width: 'min(430px, 60%)', padding: '11px 13px', background: '#12161a', border: '1px solid #2b3238', borderRadius: '9px',
+        boxShadow: '0 16px 40px rgba(0,0,0,0.55)', fontFamily: "'IBM Plex Sans',sans-serif", animation: 'vfade 0.12s ease both', pointerEvents: 'none'
+      },
+      acOpen: s.ac && s.view === 'editor',
+      acStyle: { position: 'absolute', left: '160px', top: ((s.cursor + 1) * this.LH + 14) + 'px', width: '340px', zIndex: 32, background: '#12161a', border: '1px solid #2b3238', borderRadius: '9px', boxShadow: '0 18px 44px rgba(0,0,0,0.6)', overflow: 'hidden', animation: 'vpop 0.12s ease both' },
+      acItems: [
+        { kind: 'kw', label: 'spawn', detail: 'move a task onto the scheduler' },
+        { kind: 'fn', label: 'spawn_all', detail: '(Stream<T>) -> Handle<Vec<T>>' },
+        { kind: 'fn', label: 'select', detail: 'race a set of tasks' },
+        { kind: 'ty', label: 'Task<T>', detail: 'a suspended computation' },
+        { kind: 'fn', label: 'process_request', detail: '(Connection) -> Task<Response>' }
+      ].map((i, idx) => ({
+        kind: i.kind, label: i.label, detail: i.detail,
+        kindStyle: { width: '22px', flex: 'none', fontFamily: "'JetBrains Mono',monospace", fontSize: '9.5px', letterSpacing: '0.04em', color: i.kind === 'kw' ? 'oklch(0.78 0.10 300)' : (i.kind === 'ty' ? 'oklch(0.84 0.08 200)' : 'oklch(0.86 0.09 100)') },
+        style: { display: 'flex', alignItems: 'center', gap: '9px', padding: '6px 9px', borderRadius: '6px', cursor: 'pointer', fontFamily: "'JetBrains Mono',monospace", fontSize: '12px', background: idx === s.acIdx ? '#1a2024' : 'transparent' },
+        enter: () => this.setState({ acIdx: idx }),
+        click: () => { this.setState({ ac: false }); this.toast('⏎', 'Inserted ' + i.label, s.active + ' · Ln ' + (s.cursor + 1), 'oklch(0.78 0.09 190)'); }
+      })),
+      acDoc: 'spawn transfers ownership of its argument to the scheduler. The borrow checker proves nothing else holds a reference, so no lock is needed.',
+
+      // compiler
+      compilerBodyStyle: { flex: 1, display: 'flex', flexDirection: centerNarrow ? 'column' : 'row', minHeight: 0, minWidth: 0 },
+      compilerRailStyle: centerNarrow
+        ? { flex: 'none', maxHeight: '44%', overflow: 'auto', padding: '12px 12px 14px', borderBottom: '1px solid #15191c' }
+        : { width: 'clamp(190px, 30%, 290px)', flex: 'none', overflow: 'auto', padding: '18px 0 24px 18px', borderRight: '1px solid #15191c' },
+      pipeline: pipeline, detail: detail, stageOrdinal: (s.stageSel + 1) + ' / ' + this.stages.length,
+
+      // perf
+      metrics: metrics, sparkline: sparkline, cpuPeak: Math.max.apply(null, s.cpuSeries), tasks: tasks,
+      perfLiveStyle: { display: 'flex', alignItems: 'center', gap: '7px', padding: '4px 9px', borderRadius: '6px', border: '1px solid #21262b', background: '#0e1114', fontFamily: "'JetBrains Mono',monospace", fontSize: '11px', color: '#9aa3ab' },
+      perfLiveLabel: s.running ? 'live · 8 workers' : 'idle · sampling',
+      playheadStyle: { position: 'absolute', top: 0, bottom: '0', left: 'calc(min(156px, 24%) + ' + (((s.tick * 7) % 100)) + '% * 0.7)', width: '1px', background: 'oklch(0.86 0.10 190 / 0.5)', pointerEvents: 'none' },
+
+      // settings / extensions
+      settingsTab: s.settingsTab, settingCats: settingCats, settingRows: settingRows,
+      settingsBlurb: { Editor: 'Typing, indentation and the code surface itself.', Appearance: 'Theme and chrome density.', Compiler: 'Flags passed to izvor build.', AI: 'Model and privacy for Izvor AI.', Language: 'Toolchain and language server behavior.', Formatting: 'izvor fmt rules applied on save.', Git: 'Source control integration.', Keybindings: 'Shortcut map for this machine.', Extensions: 'Update and trust policy.' }[s.settingsTab],
+      extensions: this.extensionsDef.map((e) => {
+        const installed = s.exts[e.name] !== undefined ? s.exts[e.name] : e.installed;
+        return {
+          name: e.name, desc: e.desc, mark: e.mark, verified: e.verified, installs: e.installs + ' installs',
+          iconStyle: { width: '34px', height: '34px', flex: 'none', borderRadius: '9px', background: '#161b1f', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c6ccd2', fontSize: '14px' },
+          btn: installed ? 'Installed' : 'Install',
+          btnStyle: { height: '26px', padding: '0 12px', display: 'flex', alignItems: 'center', borderRadius: '6px', cursor: 'pointer', fontSize: '11.5px', fontWeight: 600, background: installed ? '#161b1f' : 'oklch(0.80 0.10 190)', color: installed ? '#9aa3ab' : '#04141a', border: '1px solid ' + (installed ? '#262c32' : 'transparent') },
+          click: () => { this.setState((p) => ({ exts: Object.assign({}, p.exts, { [e.name]: !installed }) })); if (!installed) this.toast('✓', 'Installed ' + e.name, 'reload not required', 'oklch(0.76 0.13 155)'); }
+        };
+      }),
+
+      // terminal
+      termOpen: s.termOpen,
+      termStyle: { height: s.termH + 'px', flex: 'none', display: 'flex', flexDirection: 'column', background: '#0b0d0f', borderTop: '1px solid #1b2024', minHeight: 0 },
+      termTabs: ['Terminal', 'Build', 'Problems'].map((t) => ({
+        name: t,
+        count: t === 'Problems',
+        countLabel: String(diags.length),
+        countStyle: { marginLeft: '7px', padding: '1px 6px', borderRadius: '9px', background: '#1c2126', fontSize: '10px', color: '#c6ccd2' },
+        style: {
+          display: 'flex', alignItems: 'center', padding: '0 14px', height: '100%', cursor: 'pointer', fontSize: '11.5px', letterSpacing: '0.02em',
+          color: s.termTab === t ? '#f0f3f5' : '#8b949c',
+          boxShadow: s.termTab === t ? 'inset 0 -2px 0 oklch(0.70 0.10 190)' : 'none'
+        },
+        click: () => this.setState({ termTab: t })
+      })),
+      termIsShell: s.termTab === 'Terminal', termIsBuild: s.termTab === 'Build', termIsProblems: s.termTab === 'Problems',
+      termLines: (s.termLines || this.initialTerm()).map((l, i) => ({ text: l.text || ' ', style: { color: l.c, whiteSpace: 'pre' } })),
+      termRef: (el) => { this.termEl = el; },
+      termClear: () => this.setState({ termLines: [] }),
+      termNew: () => { this.setState({ termTab: 'Terminal' }); this.pushTerm([{ text: '❯ ', c: '#dfe4e8' }]); this.toast('＋', 'New terminal', 'zsh · ~/dev/izvor-server', 'oklch(0.78 0.09 190)'); },
+      termMaximize: () => this.setState((p) => ({ termH: p.termH > 320 ? 232 : 460 })),
+      buildRows: buildRows, buildFinished: s.buildDone && !s.building,
+      problems: problems,
+
+      // ai
+      aiOpen: s.aiOpen,
+      aiStyle: { width: s.aiW + 'px', flex: 'none', display: 'flex', flexDirection: 'column', background: '#0d0f11', borderLeft: '1px solid #1b2024', minWidth: 0 },
+      aiMsgs: aiMsgs,
+      aiContext: [{ name: 'server.iz' }, { name: 'database.iz' }, { name: 'main.iz' }],
+      aiInput: s.aiInput,
+      onAiInput: (e) => this.setState({ aiInput: e.target.value }),
+      onAiKey: (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.sendAi(); } },
+      sendAi: this.sendAi,
+      sendBtnStyle: { width: '26px', height: '26px', borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '13px', background: s.aiInput.trim() ? 'oklch(0.80 0.10 190)' : '#181c20', color: s.aiInput.trim() ? '#04141a' : '#5e666d' },
+      chatRef: (el) => { this.chatEl = el; },
+      applyDiff: this.applyDiff, rejectDiff: this.rejectDiff, explainDiff: this.explainDiff,
+      applyLabel: s.applied ? 'Applied ✓' : 'Apply',
+      applyBtnStyle: { height: '26px', padding: '0 13px', display: 'flex', alignItems: 'center', borderRadius: '6px', cursor: 'pointer', fontSize: '11.5px', fontWeight: 600, background: s.applied ? 'oklch(0.36 0.07 160)' : 'oklch(0.80 0.10 190)', color: s.applied ? 'oklch(0.88 0.11 160)' : '#04141a' },
+      newChat: () => this.setState({ aiMsgs: [{ role: 'ai', text: 'Indexed izvor-server — 8 modules, 96 declarations. Ask for a change and I will propose a diff.' }], applied: false }),
+      addContext: () => this.toast('＠', 'Context added', 'routes.iz · 31 lines', 'oklch(0.78 0.09 190)'),
+      ctxUsed: '18.4k',
+      ctxBarStyle: { height: '100%', width: '14%', background: 'oklch(0.74 0.11 300)', borderRadius: '2px' },
+      aiStatus: s.applied ? 'edit applied' : 'project indexed',
+
+      // palette / menus / toast
+      paletteOpen: s.palette,
+      paletteQuery: s.pq,
+      paletteItems: paletteItems,
+      paletteEmpty: paletteItems.length === 0,
+      paletteCount: this.commands().length,
+      paletteRef: (el) => { if (el) el.focus(); },
+      onPaletteQuery: (e) => this.setState({ pq: e.target.value, pIdx: 0 }),
+      onPaletteKey: (e) => {
+        if (e.key === 'ArrowDown') { e.preventDefault(); this.setState((p) => ({ pIdx: Math.min(cmds.length - 1, p.pIdx + 1) })); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); this.setState((p) => ({ pIdx: Math.max(0, p.pIdx - 1) })); }
+        else if (e.key === 'Enter') { const c = cmds[s.pIdx]; if (c) this.runCommand(c); }
+      },
+      closePalette: () => this.setState({ palette: false }),
+      ctxOpen: !!s.ctx,
+      ctxItems: ctxItems,
+      ctxStyle: s.ctx ? { position: 'absolute', left: Math.min(s.ctx.x, window.innerWidth - 230) + 'px', top: Math.min(s.ctx.y, window.innerHeight - 250) + 'px', width: '218px', padding: '5px', background: '#14181c', border: '1px solid #2b3238', borderRadius: '9px', boxShadow: '0 18px 44px rgba(0,0,0,0.6)', animation: 'vpop 0.1s ease both' } : {},
+      closeCtx: () => this.setState({ ctx: null }),
+      toastOpen: !!s.toast,
+      toastIcon: s.toast ? s.toast.icon : '',
+      toastTitle: s.toast ? s.toast.title : '',
+      toastSub: s.toast ? s.toast.sub : '',
+      toastIconStyle: { width: '24px', height: '24px', borderRadius: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: s.toast ? s.toast.color : '#fff', border: '1px solid ' + (s.toast ? s.toast.color : '#fff'), opacity: 0.9 },
+
+      dragSidebar: (e) => this.startDrag('sidebar', e),
+      dragAi: (e) => this.startDrag('ai', e),
+      dragTerm: (e) => this.startDrag('term', e)
+    };
+  }
+}
+
+</script>
+</body>
+</html>

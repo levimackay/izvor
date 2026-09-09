@@ -26,8 +26,8 @@ rejected instead of ignored. Division by zero is caught at evaluation
 time rather than left as undefined behavior.
 
 Not built yet: statements (`let`, `print`), variables, types, and
-everything past expressions. Parser token-helper tests are in progress
-(`tests/test_parser_1.c`), then the language starts growing.
+everything past expressions. The parser is covered by two tests: the
+token helpers, and the shape of the trees `parser_parse` builds.
 
 ## Build and run
 
@@ -37,11 +37,11 @@ Everything builds with `clang` via the Makefile, no dependencies.
 make izvor      # build the expression CLI
 make lexdump    # build the token-dump CLI
 make p1-1       # build + run a lexer test (through p1-4)
-make p2-1       # build + run a parser test
+make p2-1       # build + run a parser test (through p2-2)
 make clean      # delete build artifacts
 ```
 
-All four lexer tests pass. The parser test is a work in progress.
+All four lexer tests and both parser tests pass.
 
 ## Layout
 

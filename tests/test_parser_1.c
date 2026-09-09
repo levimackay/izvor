@@ -20,5 +20,25 @@ int main(void){
    assert(p.current.value == 1);
    assert(parser_check(&p, TOK_NUMBER) == true);
 
-   
+   assert(parser_match(&p, TOK_PLUS) == false);
+   assert(p.current.type == TOK_NUMBER);
+   assert(p.current.value == 1);
+
+   assert(parser_match(&p, TOK_NUMBER) == true);
+   assert(p.current.type == TOK_PLUS);
+
+   assert(parser_match(&p, TOK_PLUS) == true);
+   assert(p.current.type == TOK_NUMBER);
+   assert(p.current.value == 2);
+
+   assert(parser_match(&p, TOK_NUMBER) == true);
+   assert(parser_check(&p, TOK_EOF) == true);
+
+   parser_advance(&p);
+   assert(parser_check(&p, TOK_EOF) == true);
+   assert(parser_match(&p, TOK_NUMBER) == false);
+   assert(parser_check(&p, TOK_EOF) == true);
+
+   printf("test_parser_1 passed\n");
+   return 0;
 }

@@ -1,0 +1,4 @@
+# The IDE prototype is a design artifact, not part of the compiler. Left
+# in the repo but kept out of the language statistics, which otherwise
+# report a C compiler as being mostly HTML.
+design/** linguist-documentation

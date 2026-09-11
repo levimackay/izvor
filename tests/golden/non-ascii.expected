@@ -1,0 +1,5 @@
+error: expected expression, found ERROR
+ --> tests/golden/non-ascii.iz:1:1
+  |
+1 | √2
+  | ^

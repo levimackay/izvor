@@ -1,0 +1,5 @@
+error: expected ')', found EOF
+ --> tests/golden/unclosed-paren.iz:1:8
+  |
+1 | (12 + 3
+  |        ^

@@ -1,0 +1,5 @@
+error: expected end of input, found NUMBER
+ --> tests/golden/trailing-tokens.iz:1:3
+  |
+1 | 1 2
+  |   ^

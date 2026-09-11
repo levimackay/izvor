@@ -1,0 +1,5 @@
+error: expected ')', found EOF
+ --> tests/golden/deep-in-the-file.iz:3:9
+  |
+3 |   30 / 5
+  |         ^

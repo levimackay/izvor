@@ -32,9 +32,13 @@ TEST_SRC := $(wildcard tests/test_*.c)
 TEST_BIN := $(patsubst tests/%.c,$(BUILD)/%,$(TEST_SRC))
 GOLDEN   := $(wildcard tests/golden/*.iz)
 
-.PHONY: all test golden fuzz asan clean
+.PHONY: all izvor lexdump test golden fuzz asan clean
 
 all: $(BUILD)/izvor $(BUILD)/lexdump
+
+# Short aliases, so `make lexdump` means what it looks like it means.
+izvor:   $(BUILD)/izvor
+lexdump: $(BUILD)/lexdump
 
 $(BUILD)/izvor: $(SRC) src/main.c | $(BUILD)
 	$(CC) $(CFLAGS) $^ -o $@

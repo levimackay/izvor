@@ -1,18 +1,8 @@
-
-/* parser_init  — set up the lexer, then advance once so
-                  current is loaded before anyone reads it */
-
-/* parser_advance — pull the next token into current */
-
-/* parser_check — is current this type? asks only, consumes nothing */
-
-/* parser_match — if current is this type, consume it and say true; otherwise change nothing and say false */
-
-
 /* Parser implementation: token helpers and a recursive-descent
    expression parser (expression / term / factor). */
 
-#include <stdio.h>
+#include <stddef.h>
+#include "diag.h"
 #include "parser.h"
 
 void parser_init(Parser *p, const char *src) {
@@ -34,12 +24,13 @@ bool parser_match(Parser *p, TokenType type) {
     return true;
 }
 
-/* error_at — report a parse error with its character offset, naming
-   what was expected and what was actually there. */
+/* error_at — report a parse error against the token the parser is
+   sitting on, naming what was expected and what was actually there.
+   diag owns the formatting; this only supplies the facts. */
 static void error_at(const Parser *p, const char *msg) {
     long offset = p->current.start - p->lexer.src;
-    fprintf(stderr, "parse error at offset %ld: %s (got %s)\n",
-            offset, msg, token_type_name(p->current.type));
+    diag_error(p->lexer.src, offset, "%s, found %s",
+               msg, token_type_name(p->current.type));
 }
 
 static Node *parse_expression(Parser *p);

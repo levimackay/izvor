@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    # Two platforms because the compiler is meant to be portable C11 and
+    # the two toolchains disagree about enough to be worth knowing.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Warnings are errors here but not on a laptop, so work in progress
+      # still compiles locally while nothing sloppy reaches main.
+      - name: Build
+        run: make EXTRA_CFLAGS=-Werror all
+
+      - name: Unit and golden tests
+        run: make EXTRA_CFLAGS=-Werror test
+
+      - name: Fuzz the front end
+        run: make EXTRA_CFLAGS=-Werror fuzz
+
+  # AddressSanitizer catches leaks and use-after-free, and its runtime
+  # deadlocks on startup under Apple clang, so this half of the checking
+  # only runs on Linux.
+  sanitizers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Address and LeakSanitizer
+        run: make asan

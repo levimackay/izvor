@@ -2,107 +2,120 @@
 
 [![ci](https://github.com/levimackay/izvor/actions/workflows/ci.yml/badge.svg)](https://github.com/levimackay/izvor/actions/workflows/ci.yml)
 
-A statically typed programming language and its compiler, written from
-scratch in C11 with no dependencies. *Izvor* is Serbian and Croatian for
-"source" or "spring", and source files use the `.iz` extension.
+A small statically typed programming language and its compiler, written
+from scratch in C11 with no dependencies. *Izvor* is Serbian and Croatian
+for "source" or "spring", and source files use the `.iz` extension.
 
-The front end is finished: a hand-written lexer, a recursive-descent
-parser, and a heap-allocated syntax tree, with diagnostics that point at
-the offending character. The back end will generate C and hand it to
-clang. There is no parser generator, no LLVM, and no third-party library
-anywhere in the build.
+izvor compiles to C and hands that to your system's C compiler, so a
+program ends up as a normal native executable. It can also run a program
+directly with a tree-walking interpreter, which the test suite uses to
+check the compiled output against.
+
+```
+fn fib(n: Int) -> Int {
+    if n < 2 {
+        return n;
+    }
+    return fib(n - 1) + fib(n - 2);
+}
+
+var i = 0;
+while i < 10 {
+    print(fib(i));
+    i = i + 1;
+}
+```
 
 ## Running it
 
 ```console
 $ make
+$ ./build/izvor build fib.iz        # writes ./fib
+$ ./fib
+$ ./build/izvor run fib.iz          # interpret it instead
+$ ./build/izvor emit fib.iz         # print the generated C
 $ ./build/izvor -e "12 + 3 * (40 - 5)"
 (+ 12 (* 3 (- 40 5)))
 = 117
 ```
 
-The first line is the parsed tree printed back as an S-expression, so
-precedence and associativity are visible rather than assumed. The second
-is the value.
+`build` needs a C compiler on your PATH. It uses `cc` unless `CC` says
+otherwise. `-e` evaluates a single expression and prints the parsed tree
+first, which is handy for checking precedence.
 
-It reads files too:
+## The language
+
+- Two types, `Int` (64-bit, signed) and `Bool`.
+- `let` for bindings that never change, `var` for ones that do. A type
+  annotation is optional: `let age: Int = 22;` and `let age = 22;` mean the
+  same thing.
+- Functions with typed parameters and an optional return type. They can
+  be declared anywhere at the top level and called before they appear.
+- `if` / `else if` / `else`, `while`, and `return`.
+- Arithmetic `+ - * / %`, comparisons, `== !=`, and `&& || !` with
+  short-circuiting.
+- `print(value);` prints an `Int` or a `Bool` on its own line.
+- `//` comments.
+
+Statements end with a semicolon. Top-level statements are the program and
+run in order. Functions only see their own parameters and locals, not
+top-level variables.
+
+A few things C leaves undefined are defined here. Integer overflow and
+division by zero stop the program with an error pointing at the operator.
+Operands and arguments are always evaluated left to right.
 
 ```console
-$ ./build/izvor program.iz
+$ ./build/izvor run tests/golden/overflow.iz
+1
+error: integer overflow
+ --> tests/golden/overflow.iz:3:11
 ```
 
 ## Errors
 
-Getting this right early was a priority, because a compiler is mostly a
-tool for telling people what is wrong with their program.
-
 ```console
-$ ./build/izvor tests/golden/unclosed-paren.iz
-error: expected ')', found EOF
- --> tests/golden/unclosed-paren.iz:1:8
+$ ./build/izvor run tests/golden/wrong-arguments.iz
+error: 'add' takes 2 arguments, found 3
+ --> tests/golden/wrong-arguments.iz:5:7
   |
-1 | (12 + 3
-  |        ^
+5 | print(add(1, 2, 3));
+  |       ^
+error: argument 'b' of 'add' must be Int, found Bool
+ --> tests/golden/wrong-arguments.iz:6:14
+  |
+6 | print(add(1, true));
+  |              ^
 ```
 
-Every stage reports through one module, so there is a single definition
-of what an izvor error looks like. Tabs are expanded when the line is
-echoed so the caret stays under the right character, and an error at the
-end of a file points at the last line with something on it rather than at
-the blank one after it. The exact text of all eight diagnostics is pinned
-by golden tests, alongside the output of a program that compiles cleanly,
-so changing any of them is a deliberate act that shows up in a diff.
-
-## Design
-
-- **Tagged union AST.** One `NodeType` tag and a union of payloads. No
-  `switch` over that tag has a `default` case, so adding a node kind
-  makes the compiler list every place that has to handle it.
-- **Tokens borrow the source.** A token is a type, a pointer into the
-  source buffer, and a length. Nothing is copied, nothing is freed, and
-  the driver reads the whole file into one allocation so that stays true.
-- **One function per precedence level.** The grammar rule, the parser
-  function, and the resulting tree shape are the same idea written three
-  ways.
-- **Division by zero is defined.** C leaves it undefined. izvor reports
-  it and stops.
-
-The reasoning behind each of these, and the list of things that are
-measurably still wrong, is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+The parser recovers after a syntax error and keeps going, and the checker
+reports every type error it finds, so one run shows you everything wrong
+with a file instead of just the first thing.
 
 ## Tests
 
 ```console
-$ make test      # unit tests plus golden diagnostic tests
-$ make fuzz      # 20,000 pseudo-random inputs through the front end
-$ make asan      # rebuild under Address and LeakSanitizer
+$ make test      # unit tests, then every golden program both ways
+$ make fuzz      # 20,000 random programs through the whole compiler
+$ make asan      # the same under Address and LeakSanitizer
 ```
 
-Plain `main()` and `assert()`, no framework. Unit tests cover the lexer,
-the parser's token helpers, the tree shapes it builds, and the line and
-column math. Golden tests pin the exact output of eight broken programs
-and one correct one. The fuzzer asserts
-that no input, however malformed, crashes the lexer or the parser; its
-seed is fixed so a CI failure reproduces exactly. Everything builds with
-UndefinedBehaviorSanitizer, CI runs the lot on Linux and macOS with
-warnings promoted to errors, and a Linux job repeats it under Address and
-LeakSanitizer.
+Each program in `tests/golden/` has an `.expected` file holding its exact
+output, errors included. `make test` runs every one through the
+interpreter and also compiles it to a binary and runs that, and both have
+to match the file. Unit tests are plain `main()` and `assert()`. Everything
+builds with UndefinedBehaviorSanitizer, and CI runs it all on Linux and
+macOS.
 
-## Status
-
-Working today: integer arithmetic with correct precedence and
-associativity, unary minus, parenthesized grouping, whole-input parsing
-that rejects trailing tokens, and a tree-walking evaluator.
-
-Not built yet: statements, variables, types, functions, and code
-generation. The plan for each, in order, is in
+More on how it's put together and why is in
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). What's next is in
 [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Layout
 
 ```
 src/      the compiler
-tests/    unit tests, golden diagnostic tests, and the fuzzer
+tests/    unit tests, golden programs, and the fuzzer
 docs/     architecture and roadmap
 ```
 

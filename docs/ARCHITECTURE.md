@@ -1,146 +1,157 @@
 # Architecture
 
 izvor is a compiler for a small statically typed language, written in C11
-with no dependencies beyond a C compiler and `make`. This document covers
-how the pieces fit together, which decisions were deliberate, and what is
-known to be missing.
+with no dependencies beyond a C compiler and `make`. This covers how the
+pieces fit together, which decisions were deliberate, and what is known to
+be missing.
 
 ## The pipeline
 
 ```
 source text
-   |  lexer        characters   -> tokens
+   |  lexer        characters  -> tokens
+   |  parser       tokens      -> syntax tree
+   |  checker      tree        -> the same tree, with a type on every expression
    v
- tokens
-   |  parser       tokens       -> abstract syntax tree
-   v
-   AST
-   |  evaluator    tree         -> a value                (today)
-   |  codegen      tree         -> C source               (planned)
-   v
- result
+   +--> interpreter   walks the tree and runs it           (izvor run)
+   +--> codegen       walks the tree and writes C           (izvor emit)
+          |  cc       C -> native executable                (izvor build)
 ```
 
-Everything up to the AST is finished. The evaluator is a tree walk that
-exists to prove the front end is right and to act as the oracle the code
-generator has to agree with once it lands. The planned backend emits C
-and hands it to clang, rather than targeting machine code or LLVM.
+Both back ends read the tree the checker has already approved, so neither
+one has any error handling for bad programs. If something reaches them
+that the checker should have stopped, that is a checker bug.
 
 ## Modules
 
-| File | Responsibility |
+| File | What it does |
 |---|---|
-| `src/lexer.c` | Scans characters into a flat stream of tokens. No lookahead, no backtracking. |
-| `src/ast.c` | Heap-allocated tree nodes and the recursive destructor. |
-| `src/parser.c` | Recursive descent over the token stream, one function per precedence level. |
-| `src/diag.c` | The single place that decides what a compiler error looks like. |
-| `src/main.c` | The driver: read a file, run the pipeline, print the tree and its value. |
-| `src/lexer_main.c` | `lexdump`, a token dumper used to debug the lexer in isolation. |
+| `src/lexer.c` | Characters into tokens. One character of lookahead, no backtracking. |
+| `src/ast.c` | Tree nodes, statements, functions, and freeing all of it. |
+| `src/parser.c` | Recursive descent, one function per precedence level, with error recovery. |
+| `src/check.c` | Names, types, returns, and everything else that is wrong without being a syntax error. |
+| `src/interp.c` | The tree-walking interpreter. |
+| `src/codegen.c` | Writes the program out as C. |
+| `src/diag.c` | The single place that decides what an error looks like. |
+| `src/main.c` | The driver: `run`, `build`, `emit`, `-e`. |
+| `src/lexer_main.c` | `lexdump`, a token dumper for debugging the lexer by itself. |
 
 ## Decisions worth defending
 
-**A tagged union for AST nodes, not a struct hierarchy.** Every `Node`
-carries a `NodeType` tag and a union of the payloads each kind needs. One
-allocation per node, one `switch` per operation, and the compiler warns
-when a new node type is added without handling it everywhere, because no
-`switch` over `NodeType` has a `default` case. The alternative in C is a
-base struct with derived structs cast onto it, which buys polymorphism
-and loses that exhaustiveness warning.
+**A tagged union for tree nodes, not a struct hierarchy.** Every `Node`
+has a `NodeType` tag and a union of what each kind needs. One allocation
+per node, one `switch` per operation, and no `switch` over `NodeType` or
+`StmtType` has a `default`, so adding a node kind makes the compiler list
+every place that has to handle it. Statements are a separate `Stmt` type
+so an expression can never end up where a statement belongs.
 
-**Tokens borrow the source, they do not own it.** A `Token` is a type, a
-pointer into the source buffer, and a length. Nothing is copied and
-nothing is freed. Two consequences follow. Every token is only valid
-while the source buffer is alive, which is why the driver reads the whole
-file into one allocation rather than streaming it. And the token text is
-not NUL-terminated at the token boundary, so comparisons have to check
-length before bytes, or `let` matches the prefix of `letter`.
+**Tokens borrow the source.** A token is a type, a pointer into the source
+buffer, and a length. Names in the tree are the same thing, so nothing is
+copied and every error can point back into the original text. The cost is
+that the source buffer has to outlive everything, which is why the driver
+reads the whole file into one allocation.
 
-**Recursive descent, not a parser generator.** One function per
-precedence level, so the grammar rule, the C function, and the tree shape
-are the same idea three times over:
+**Semicolons.** Every statement ends with one. Leaving them out works
+until a bare expression can be a statement, and then `x\n-1` has two
+readings. Making newlines significant would fix that, but it moves line
+structure into the lexer for a cosmetic gain.
 
-```
-expression -> term (("+" | "-") term)*
-term       -> factor (("*" | "/") factor)*
-factor     -> NUMBER | "(" expression ")" | "-" factor
-```
-
-Left associativity falls out of the loop shape: each iteration folds the
-tree built so far into the left child of a new node, so `10 - 3 - 2`
-groups as `(- (- 10 3) 2)` and evaluates to 5 rather than 9. There is a
-test pinning exactly that.
-
-**Errors are data the whole compiler shares.** Every stage reports
-through `diag_error`, which takes the source and a byte offset and turns
-them into a line, a column, and a caret under the offending character.
-No stage formats its own message, so adding a semantic analysis pass
-means adding one call, not inventing a second error style.
+**Recursive descent, not a parser generator.** The grammar rule, the C
+function and the tree shape are the same thing written three ways:
 
 ```
-error: expected ')', found EOF
- --> tests/golden/unclosed-paren.iz:1:8
-  |
-1 | (12 + 3
-  |        ^
+expression -> and ("||" and)*
+and        -> equality ("&&" equality)*
+equality   -> comparison (("==" | "!=") comparison)*
+comparison -> sum (("<" | "<=" | ">" | ">=") sum)*
+sum        -> term (("+" | "-") term)*
+term       -> factor (("*" | "/" | "%") factor)*
+factor     -> ("-" | "!") factor | NUMBER | "true" | "false"
+            | NAME | NAME "(" arguments ")" | "(" expression ")"
 ```
 
-**Integer division by zero is an error, not undefined behavior.** C
-leaves it undefined, which means the generated program may do anything at
-all. izvor decides on its behalf: report it and stop. This is the first
-real language design decision in the project and it is written down
-rather than inherited.
+Every binary level is the same loop, so they all go through one function
+that takes the next level down and the operators for this one. Left
+associativity comes from the loop: each pass folds what has been built so
+far into the left side of a new node, so `10 - 3 - 2` is 5, not 9.
+
+**Error recovery.** When a statement fails to parse, the parser skips
+ahead to the next `;` or the next keyword that starts a statement and
+carries on. It counts braces while it skips so it doesn't stop inside a
+block it has half read. The parser only stops at the end of the file, and
+the checker never stops early at all. Instead a broken expression gets
+the type `<error>`, and nothing complains about an `<error>`, so one
+mistake doesn't turn into ten messages.
+
+**Integer overflow and division by zero are errors.** C leaves both
+undefined, which means the generated program could do anything. izvor
+decides: the program stops and says where. The interpreter uses the
+`__builtin_*_overflow` functions for this, and the generated C calls small
+`rt_` helpers that do the same checks, so both back ends fail the same way
+with the same message.
+
+**Left to right, always.** C doesn't say what order a function's
+arguments or an operator's operands are evaluated in, and gcc and clang
+don't agree. izvor says left to right. When a statement has more than one
+thing in it that can print or fail, the code generator pulls the earlier
+ones into temporaries so C has no choice about the order. Most statements
+don't need that and come out as one line.
+
+**No shadowing.** A name can't be declared again while an earlier one with
+that name is still visible, and a variable can't share a name with a
+function. Besides catching mistakes, this means every izvor name maps
+straight onto a C name (`x` becomes `iz_x`) with no renaming. In C,
+`long x = x + 1;` inside a block reads the new, uninitialized `x`, and
+izvor never has to worry about generating that.
+
+**The interpreter is the oracle.** Every golden test runs twice, once
+through the interpreter and once compiled, and both runs have to produce
+exactly the `.expected` file. The two back ends share nothing but the
+tree, so they would have to be wrong in the same way for a bug to get
+through.
 
 ## Testing
 
-Plain `main()` plus `assert()`, no framework, three kinds:
+- **Unit tests** (`tests/test_*.c`) for the lexer, the parser's helpers
+  and tree shapes, recovery, and the line and column math.
+- **Golden tests** (`tests/golden/`) are whole programs with their exact
+  output: things that work, runtime errors, and every kind of compile
+  error. An error message is a user interface, so changing one should show
+  up in a diff.
+- **The fuzzer** (`tests/fuzz.c`) glues random tokens together into
+  programs and pushes them through parsing, checking and code generation.
+  It only checks that nothing crashes. The seed is fixed, so a failure on
+  CI reproduces on a laptop.
 
-- **Unit tests** (`tests/test_*.c`) cover the lexer, the parser's token
-  helpers, the tree shapes it builds, and the line and column math.
-- **Golden tests** (`tests/golden/`) pin the exact text of every
-  diagnostic. A diagnostic is a user interface, so changing one should
-  show up in a diff rather than being noticed by nobody.
-- **A fuzzer** (`tests/fuzz.c`) throws pseudo-random input at the lexer
-  and parser and asserts only that neither crashes. The seed is fixed, so
-  a failure on CI reproduces exactly on a laptop.
-
-Everything compiles with UndefinedBehaviorSanitizer, which turns
-out-of-bounds reads and signed overflow into a loud abort naming the
-line. AddressSanitizer, which is what catches leaks and use-after-free,
+Everything builds with UndefinedBehaviorSanitizer. AddressSanitizer
 deadlocks on startup under Apple clang 17 on macOS 26.5, so `make asan`
-keeps it behind its own target and CI runs that target on Linux.
-
-The obvious macOS alternative was tried and rejected. The system `leaks`
-tool reports zero on a deliberately leaked block on this machine, because
-it cannot inspect the process under the current security policy, and a
-check that cannot fail is worse than no check at all.
-
-CI builds and runs everything on Linux and macOS with warnings promoted
-to errors.
+has its own target and CI runs it on Linux. The macOS `leaks` tool is not
+a substitute. On this machine it reports zero on a deliberately leaked
+block, because it can't inspect the process under the current security
+policy.
 
 ## Known limitations
 
-These are real and measured, not hypothetical.
+**Calls nest at most 10,000 deep.** Past that the program stops with
+"more than 10000 nested calls", the same way in both back ends. Without a
+limit the two would crash at very different depths: the interpreter uses a
+few kilobytes of C stack per izvor call, and the compiled code almost
+none. The interpreter runs on its own thread with a 512 MB stack so the
+sanitizer builds can still reach the limit.
 
-**Parser recursion is unbounded.** Nesting is handled by the C call
-stack, so a deeply nested expression overflows it. Measured on macOS with
-the default 8 MB stack, `((((...1...))))` survives 20,000 levels of
-nesting and aborts somewhere before 30,000. A production compiler tracks
-depth and reports "expression nested too deeply" instead. Tracked on the
-roadmap.
+**Nesting is capped at 100.** Expressions, blocks and `else if` chains
+deeper than that are rejected. This keeps the parser off the edge of the
+C stack and keeps the generated C under clang's default bracket depth
+limit of 256.
 
-**Arithmetic is unchecked.** Evaluating a tree whose result exceeds a
-`long` is signed overflow, which is undefined behavior. Under the
-sanitizer build it aborts loudly, which is why the fuzzer exercises the
-front end only and leaves evaluation alone. Checked arithmetic is on the
-roadmap.
+**Columns are counted in bytes.** Non-ASCII is only allowed in comments,
+and a comment runs to the end of its line, so the only error that can
+land after one on the same line is an unexpected end of file.
 
-**Columns are counted in bytes, not characters.** An error positioned
-after a multi-byte UTF-8 character reports a column further right than a
-human would count, and the caret is offset by the same amount. Non-ASCII
-bytes are currently rejected by the lexer anyway, so this only shows up
-in the error pointing at them.
+**The most negative Int can't be written as a literal.**
+`-9223372036854775808` is a minus sign applied to a number that doesn't
+fit. `-9223372036854775807 - 1` works.
 
-**The parser stops at the first error.** There is no recovery and no
-resynchronization, so a file with three mistakes reports one. This is a
-deliberate ordering choice, not an oversight: error recovery is worth
-building once there are statements to resynchronize to.
+**`build` hides the C compiler's output.** If `cc` rejects the generated
+code, that's a bug in izvor, and `izvor emit` is how to look at what it
+was given.

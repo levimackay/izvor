@@ -1,119 +1,69 @@
 # Roadmap
 
-The target is a small, complete, statically typed language that compiles
-to C and then to a native binary. Not a large one. Every phase has to
-leave the project building and passing its tests.
-
-The first end to end milestone, and the thing everything below is aimed
-at:
-
-```
-let x = 10
-let y = 20
-print(x + y)
-```
-
-compiled to C, handed to clang, and run as a native executable printing
-`30`.
+The goal is a small, complete, statically typed language that compiles to
+C and then to a native binary. Small, not large. Every step has to leave
+the project building and passing its tests.
 
 ## Done
 
-**Phase 1, lexer.** Integer literals, `+ - * /`, parentheses, and error
-tokens that do not abort the scan. Four tests.
+**Lexer.** Numbers, names and keywords, every operator, `//` comments,
+and error tokens that don't stop the scan. Literals too big for an `Int`
+are an error rather than a silent overflow.
 
-**Phase 2, parser and AST.** Recursive descent with one function per
-precedence level, building a heap-allocated tagged-union tree. Correct
-precedence, left associativity, unary minus, parenthesized grouping, and
-a whole-input requirement so trailing garbage is rejected. Two tests.
+**Parser and syntax tree.** Recursive descent, one function per precedence
+level. Statements, blocks, functions, calls, and recovery after errors.
+Nesting past 100 levels is an error instead of a stack overflow.
 
-**Infrastructure.** Diagnostics with line, column and caret. Golden tests
-pinning every error message. A fuzzer over the front end. Sanitizer
-builds, leak checking, and CI on Linux and macOS.
+**Variables and statements.** `let`, `var`, assignment, `print`, and
+programs that are a list of statements.
 
-## Phase 3, variables and statements
+**Types.** `Int` and `Bool`, inferred from the value or written out, and
+checked everywhere they meet.
 
-The step that turns a calculator into a language. A program stops being
-one expression and becomes a sequence of statements, and a name has to
-mean something at run time that it cannot mean at parse time.
+**Functions and control flow.** Typed parameters, return types, calls in
+any order, recursion, `if`/`else if`/`else`, and `while`.
 
-- **3.1 Lexer: identifiers and keywords.** `TOK_IDENT`, `let`, `var`,
-  `print`, `=`. Keywords are scanned as identifiers first and classified
-  afterwards, so `letter` stays one token.
-- **3.2 AST: statements.** A second node family for statements alongside
-  the expression nodes, plus an identifier expression. A program becomes
-  a list of statements rather than one tree.
-- **3.3 Parser: a program is a sequence of statements.** Needs the
-  statement terminator decision below settled first.
-- **3.4 Environment.** Where a name maps to a value. A flat array of name
-  and value pairs is the right size for now; a hash table is machinery
-  with nothing yet to pay for it. `let` bindings reject reassignment,
-  `var` bindings allow it.
-- **3.5 Driver.** Run a whole file of statements rather than one
-  expression.
+**Semantic checks.** Undefined names, assigning to a `let`, wrong argument
+counts and types, returning the wrong thing or nothing, functions that can
+fall off the end, statements that do nothing, and a warning for code after
+a `return`. It reports all of them, not just the first.
 
-## Phase 4, types and inference
+**Code generation.** The checked tree becomes readable C with overflow and
+division checks, evaluated strictly left to right.
 
-Every expression gets a type before anything runs. `let age = 22` infers
-`Int`, `let age: Int = 22` states it, and the two disagree loudly when
-they should. Integers, booleans, and floats if they stay cheap.
+**Native executables.** `izvor build` pipes the C into `cc` and produces a
+binary. The first milestone, a program that adds two variables and prints
+`30` as a native executable, works:
 
-## Phase 5, functions and control flow
+```
+let x = 10;
+let y = 20;
+print(x + y);
+```
 
-`fn add(a: Int, b: Int) -> Int`, `if`/`else`, loops, and call expressions.
-Scope becomes a stack of environments rather than one.
+**Infrastructure.** Diagnostics with line, column and caret, golden tests
+run through both back ends, a fuzzer over the whole compiler, sanitizer
+builds, and CI on Linux and macOS.
 
-## Phase 6, semantic analysis and error quality
+## Next: arrays, structs, and a small runtime
 
-A real pass between parsing and code generation: undefined names,
-assignment to a `let`, wrong argument counts, unreachable code. Error
-recovery belongs here too, so one broken file reports every problem in it
-instead of only the first.
+Aggregates, and whatever runtime support they need. Strings probably come
+in here too, since `print` can't say anything but numbers yet. This is
+also where izvor needs its first heap allocations at run time, which means
+deciding who frees them.
 
-## Phase 7, code generation
+## After that: concurrency
 
-Walk the typed tree and emit C. The generated code should be readable and
-boringly predictable, because being able to read it is the whole argument
-for this backend over LLVM.
+`parallel { }` and `parallel for`, without the programmer ever touching
+threads, joins or scheduling. Shared mutable state inside a parallel block
+should be a compile error that suggests a reduction, not a silent race.
+Then dependency analysis, and then parallelizing the simple cases
+automatically. These are the stretch goals and they come last on purpose.
 
-## Phase 8, native executables
+## Smaller things
 
-Invoke clang on the generated C, manage temporary files, surface the
-underlying compiler's failures as izvor errors rather than raw output,
-and produce a binary. The milestone at the top of this file closes here.
-
-## Phase 9, arrays, structs, and a small runtime
-
-Aggregates, and whatever minimal runtime support they need.
-
-## Phases 10 to 12, concurrency
-
-`parallel { }` and `parallel for`, with the programmer never touching
-threads, joins, or scheduling. Shared mutable state inside a parallel
-block is a compile error suggesting a reduction, not a silent race. After
-that, dependency analysis, and then automatic parallelization of the
-simple cases. These are the stretch goals and they come last on purpose.
-
-## Open decisions
-
-**How does a statement end?** A semicolon, a newline, or nothing. Nothing
-works today because every statement starts with a keyword, but that stops
-being true in phase 5 when a bare expression can be a statement, and
-adding a terminator later breaks every program written before it. Newline
-sensitivity means the lexer stops treating newlines as whitespace and
-starts carrying line structure, which is real complexity for a cosmetic
-gain. Leaning toward a required semicolon. Has to be settled before 3.3.
-
-**Are declarations expressions?** `let` returning a value makes the
-grammar smaller and the language stranger. Currently assumed no.
-
-## Debt worth paying down
-
-Carried from the limitations in [ARCHITECTURE.md](ARCHITECTURE.md):
-
-- **Depth limit in the parser.** Track nesting depth and report an error
-  instead of overflowing the C stack past roughly 20,000 levels.
-- **Checked arithmetic.** Overflow in evaluation is undefined behavior
-  today. Decide the language's answer, implement it, and let the fuzzer
-  cover evaluation once it has one.
-- **Character columns.** Count UTF-8 characters rather than bytes once
-  the lexer accepts non-ASCII identifiers.
+- `break` and `continue`. The checker would need to know it's inside a
+  loop, and `while true` would stop counting as a loop that never ends.
+- Compound assignment (`+=` and friends).
+- Count columns in characters instead of bytes once names can be
+  non-ASCII.

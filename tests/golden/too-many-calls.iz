@@ -1,0 +1,6 @@
+fn forever(n: Int) -> Int {
+    return forever(n + 1);
+}
+
+print(1);
+print(forever(0));

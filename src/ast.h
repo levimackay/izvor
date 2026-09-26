@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include "lexer.h"
 
+#define MAX_CALLS 10000
+
 typedef enum {
     TYPE_ERROR,
     TYPE_INT,

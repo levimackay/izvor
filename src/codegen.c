@@ -30,6 +30,8 @@ static const char prelude[] =
     "    exit(1);\n"
     "}\n"
     "\n"
+    "static int rt_depth;\n"
+    "\n"
     "static long rt_add(long a, long b, const char *at) {\n"
     "    long r;\n"
     "    if (__builtin_add_overflow(a, b, &r)) rt_fail(\"integer overflow\", at);\n"
@@ -65,6 +67,11 @@ static const char prelude[] =
     "    return -a;\n"
     "}\n"
     "\n"
+    "static long rt_leave(long value) {\n"
+    "    rt_depth--;\n"
+    "    return value;\n"
+    "}\n"
+    "\n"
     "static void rt_print_int(long value) {\n"
     "    printf(\"%ld\\n\", value);\n"
     "}\n"
@@ -96,11 +103,11 @@ static const char *c_type(Type type) {
     return "long";
 }
 
-static void emit_at(Gen *g, long offset) {
+static void emit_location(Gen *g, long offset) {
     char at[4096];
     diag_location(g->src, offset, at, sizeof at);
 
-    fputs(", \"", g->out);
+    fputc('"', g->out);
     for (const char *s = at; *s != '\0'; s++) {
         unsigned char c = (unsigned char)*s;
         if (c == '"' || c == '\\') {
@@ -112,6 +119,11 @@ static void emit_at(Gen *g, long offset) {
         }
     }
     fputc('"', g->out);
+}
+
+static void emit_at(Gen *g, long offset) {
+    fputs(", ", g->out);
+    emit_location(g, offset);
 }
 
 static const char *helper_for(TokenType op) {
@@ -394,11 +406,13 @@ static void emit_stmt(Gen *g, const Stmt *stmt) {
     case STMT_RETURN:
         start_stmt(g, stmt->as.expr);
         if (stmt->as.expr == NULL) {
+            fputs("rt_depth--;\n", g->out);
+            indent(g);
             fputs("return;\n", g->out);
         } else {
-            fputs("return ", g->out);
+            fputs("return rt_leave(", g->out);
             emit_expr(g, stmt->as.expr, false);
-            fputs(";\n", g->out);
+            fputs(");\n", g->out);
         }
         break;
     case STMT_EXPR:
@@ -434,6 +448,9 @@ void codegen_emit(FILE *out, const char *src, const Program *prog) {
     Gen g = {out, src, 0, 0, NULL, 0, 0};
 
     fputs(prelude, out);
+    fprintf(out, "\nstatic void rt_enter(const char *at) {\n"
+                 "    if (++rt_depth > %d) rt_fail(\"more than %d nested calls\", at);\n"
+                 "}\n", MAX_CALLS, MAX_CALLS);
 
     if (prog->functions != NULL) fputc('\n', out);
     for (const Function *fn = prog->functions; fn != NULL; fn = fn->next) {
@@ -444,9 +461,12 @@ void codegen_emit(FILE *out, const char *src, const Program *prog) {
     for (const Function *fn = prog->functions; fn != NULL; fn = fn->next) {
         fputc('\n', out);
         emit_signature(&g, fn);
-        fputs(" {\n", out);
+        fputs(" {\n    rt_enter(", out);
+        emit_location(&g, fn->offset);
+        fputs(");\n", out);
         g.next_temp = 0;
         emit_block(&g, fn->body);
+        if (fn->returns == TYPE_VOID) fputs("    rt_depth--;\n", out);
         fputs("}\n", out);
     }
 

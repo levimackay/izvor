@@ -1,4 +1,5 @@
 #include <limits.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "diag.h"
@@ -16,6 +17,7 @@ typedef struct {
     int count;
     int capacity;
     int base;
+    int depth;
     bool returning;
     long result;
 } Interp;
@@ -106,6 +108,7 @@ static long eval_binary(Interp *in, const Node *node) {
 static long call(Interp *in, const Node *node) {
     const Function *fn = find_function(in, node->as.call.callee);
     int frame = in->count;
+    char msg[64];
     Name unnamed = {"", 0};
 
     for (int i = 0; i < node->as.call.arg_count; i++) {
@@ -116,10 +119,16 @@ static long call(Interp *in, const Node *node) {
         in->slots[frame + i].name = fn->params[i].name;
     }
 
+    if (++in->depth > MAX_CALLS) {
+        snprintf(msg, sizeof msg, "more than %d nested calls", MAX_CALLS);
+        fail(in, fn->offset, msg);
+    }
+
     int saved_base = in->base;
     in->base = frame;
     in->result = 0;
     exec_block(in, fn->body);
+    in->depth--;
 
     long result = in->result;
     in->returning = false;
@@ -202,14 +211,31 @@ static void exec_block(Interp *in, const Stmt *body) {
     in->count = mark;
 }
 
+static void *run_thread(void *arg) {
+    Interp *in = arg;
+    exec_block(in, in->prog->statements);
+    return NULL;
+}
+
 void interp_run(const char *src, const Program *prog) {
-    Interp in = {src, prog, NULL, 0, 0, 0, false, 0};
-    exec_block(&in, prog->statements);
+    Interp in = {src, prog, NULL, 0, 0, 0, 0, false, 0};
+
+    pthread_attr_t attr;
+    pthread_t thread;
+    pthread_attr_init(&attr);
+    pthread_attr_setstacksize(&attr, (size_t)512 << 20);
+    if (pthread_create(&thread, &attr, run_thread, &in) == 0) {
+        pthread_join(thread, NULL);
+    } else {
+        run_thread(&in);
+    }
+    pthread_attr_destroy(&attr);
+
     free(in.slots);
 }
 
 long interp_eval(const char *src, const Node *expr) {
-    Interp in = {src, NULL, NULL, 0, 0, 0, false, 0};
+    Interp in = {src, NULL, NULL, 0, 0, 0, 0, false, 0};
     long value = eval(&in, expr);
     free(in.slots);
     return value;

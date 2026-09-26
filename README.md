@@ -111,6 +111,13 @@ More on how it's put together and why is in
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). What's next is in
 [docs/ROADMAP.md](docs/ROADMAP.md).
 
+## IDE
+
+There's a design prototype of an IDE for izvor,
+[Izvor Studio](https://github.com/levimackay/izvor-studio). It was designed
+with Claude Design, and it shows where the tooling could go rather than
+anything that exists yet.
+
 ## Layout
 
 ```

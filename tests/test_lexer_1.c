@@ -1,4 +1,3 @@
-/* Test for task 1.1 — token_type_name. Do not edit; make it pass. */
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>

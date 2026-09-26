@@ -1,4 +1,3 @@
-/* Test for task 1.4 — error tokens + a full expression sweep. Do not edit. */
 #include <assert.h>
 #include <stdio.h>
 #include "../src/lexer.h"
@@ -7,26 +6,22 @@ int main(void) {
     Lexer lx;
     Token t;
 
-    /* an unrecognized character becomes an ERROR token... */
     const char *src = "1 @ 2";
     lexer_init(&lx, src);
     assert(lexer_next(&lx).type == TOK_NUMBER);
     t = lexer_next(&lx);
     assert(t.type == TOK_ERROR);
-    assert(t.start == src + 2);        /* points at the '@' */
+    assert(t.start == src + 2);
     assert(t.length == 1);
-    /* ...and the lexer keeps going afterwards */
     t = lexer_next(&lx);
     assert(t.type == TOK_NUMBER && t.value == 2);
     assert(lexer_next(&lx).type == TOK_EOF);
 
-    /* several bad characters: one error each, no crash */
     lexer_init(&lx, "@$");
     assert(lexer_next(&lx).type == TOK_ERROR);
     assert(lexer_next(&lx).type == TOK_ERROR);
     assert(lexer_next(&lx).type == TOK_EOF);
 
-    /* the full sweep: (1 + 23) * 4 - 5 / 2 */
     lexer_init(&lx, "(1 + 23) * 4 - 5 / 2");
     TokenType expected[] = {
         TOK_LPAREN, TOK_NUMBER, TOK_PLUS, TOK_NUMBER, TOK_RPAREN,

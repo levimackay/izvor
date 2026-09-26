@@ -1,6 +1,3 @@
-/* Parser implementation: token helpers and a recursive-descent
-   expression parser (expression / term / factor). */
-
 #include <stddef.h>
 #include "diag.h"
 #include "parser.h"
@@ -24,9 +21,6 @@ bool parser_match(Parser *p, TokenType type) {
     return true;
 }
 
-/* error_at — report a parse error against the token the parser is
-   sitting on, naming what was expected and what was actually there.
-   diag owns the formatting; this only supplies the facts. */
 static void error_at(const Parser *p, const char *msg) {
     long offset = p->current.start - p->lexer.src;
     diag_error(p->lexer.src, offset, "%s, found %s",
@@ -35,7 +29,6 @@ static void error_at(const Parser *p, const char *msg) {
 
 static Node *parse_expression(Parser *p);
 
-/* factor -> NUMBER | "(" expression ")" | "-" factor */
 static Node *parse_factor(Parser *p) {
     if (parser_check(p, TOK_NUMBER)) {
         long value = p->current.value;
@@ -61,7 +54,6 @@ static Node *parse_factor(Parser *p) {
     return NULL;
 }
 
-/* term -> factor (("*" | "/") factor)* */
 static Node *parse_term(Parser *p) {
     Node *left = parse_factor(p);
     if (left == NULL) return NULL;
@@ -78,7 +70,6 @@ static Node *parse_term(Parser *p) {
     return left;
 }
 
-/* expression -> term (("+" | "-") term)* */
 static Node *parse_expression(Parser *p) {
     Node *left = parse_term(p);
     if (left == NULL) return NULL;

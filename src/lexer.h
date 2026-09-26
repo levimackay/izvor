@@ -1,6 +1,3 @@
-/* Token definitions and the lexer's public interface.
-   The lexer turns source text into a flat stream of tokens. */
-
 #ifndef IZVOR_LEXER_H
 #define IZVOR_LEXER_H
 

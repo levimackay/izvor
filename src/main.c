@@ -1,20 +1,8 @@
-/* izvor driver: read a program, parse it, print the syntax tree in
-   S-expression form, then evaluate it.
-
-   Input comes from a file (izvor prog.iz) or straight from the command
-   line (izvor -e "1 + 2"). Both paths end up as one NUL-terminated
-   buffer that the whole front end borrows and never owns. */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "diag.h"
 #include "parser.h"
 
-/* read_file — slurp a whole file into one NUL-terminated buffer.
-   Reading the file in one shot rather than streaming it is what lets a
-   Token be a pointer into the source instead of a copied string, which
-   is why error messages can print the offending line back. Caller owns
-   the buffer. Returns NULL after reporting the reason. */
 static char *read_file(const char *path) {
     FILE *f = fopen(path, "rb");
     if (f == NULL) {
@@ -35,7 +23,6 @@ static char *read_file(const char *path) {
     }
     rewind(f);
 
-    // One extra byte for the NUL the lexer stops on.
     char *buffer = malloc((size_t)size + 1);
     if (buffer == NULL) {
         fprintf(stderr, "error: out of memory reading %s\n", path);
@@ -55,9 +42,6 @@ static char *read_file(const char *path) {
     return buffer;
 }
 
-/* print_tree — write the tree back out as an S-expression. Parentheses
-   make the parser's precedence decisions visible, so 1 + 2 * 3 prints as
-   (+ 1 (* 2 3)) and a wrong answer is obvious by eye. */
 static void print_tree(const Node *node) {
     switch (node->type) {
     case NODE_NUMBER:
@@ -87,10 +71,6 @@ static void print_tree(const Node *node) {
     }
 }
 
-/* eval — the meaning of a tree, defined by recursion: a number means
-   itself, an operator node means its children combined. This is the
-   temporary back end. Once codegen lands it stays as the oracle the
-   generated C has to agree with. */
 static long eval(const Node *node) {
     switch (node->type) {
     case NODE_NUMBER:
@@ -105,9 +85,6 @@ static long eval(const Node *node) {
         case TOK_MINUS: return left - right;
         case TOK_STAR:  return left * right;
         case TOK_SLASH:
-            // C leaves integer division by zero undefined, which means
-            // the compiler may do literally anything. izvor decides
-            // instead: it is an error, and the program stops.
             if (right == 0) {
                 fprintf(stderr, "error: division by zero\n");
                 exit(1);

@@ -22,7 +22,7 @@ jobs:
       - name: Unit and golden tests
         run: make EXTRA_CFLAGS=-Werror test
 
-      - name: Fuzz the front end
+      - name: Fuzz the compiler
         run: make EXTRA_CFLAGS=-Werror fuzz
 
   sanitizers:

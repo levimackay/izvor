@@ -1,0 +1,30 @@
+fn say(n: Int) -> Int {
+    print(n);
+    return n;
+}
+
+fn add3(a: Int, b: Int, c: Int) -> Int {
+    return a + b + c;
+}
+
+print(say(1) + say(2) * say(3));
+print(say(4) - say(5));
+let x = say(6) < say(7) && say(8) == 8;
+print(x);
+print(false || say(9) > 0 && say(10) + say(11) > 100);
+print(true && say(12) + say(13) > 0 || say(14) + say(15) > 0);
+
+var i = 0;
+while say(i) + say(100) < 102 {
+    i = i + 1;
+}
+
+if say(-1) + say(0) > 0 {
+    print(0);
+} else if say(16) + say(17) > 0 {
+    print(1);
+}
+
+print(add3(say(18), say(19), say(20)));
+print(say(21) + add3(say(22), 0, say(23)));
+print((1 / 0) + (9223372036854775807 + 1));

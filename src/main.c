@@ -1,7 +1,15 @@
+#define _POSIX_C_SOURCE 200809L
+
+#include <errno.h>
+#include <fcntl.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include "check.h"
+#include "codegen.h"
 #include "diag.h"
 #include "interp.h"
 #include "parser.h"
@@ -124,9 +132,87 @@ static bool front_end(const char *path, char **src, Program *prog) {
     return false;
 }
 
+static char *default_output(const char *path) {
+    size_t length = strlen(path);
+    char *out = xrealloc(NULL, length + 5);
+    memcpy(out, path, length + 1);
+    if (length > 3 && strcmp(path + length - 3, ".iz") == 0) {
+        out[length - 3] = '\0';
+    } else {
+        strcat(out, ".out");
+    }
+    return out;
+}
+
+static bool build_binary(const char *src, const Program *prog, const char *path, const char *output) {
+    const char *cc = getenv("CC");
+    if (cc == NULL || cc[0] == '\0') {
+        cc = "cc";
+    }
+
+    int fds[2];
+    if (pipe(fds) != 0) {
+        fprintf(stderr, "error: cannot create a pipe to %s: %s\n", cc, strerror(errno));
+        return false;
+    }
+
+    pid_t pid = fork();
+    if (pid < 0) {
+        fprintf(stderr, "error: cannot start %s: %s\n", cc, strerror(errno));
+        close(fds[0]);
+        close(fds[1]);
+        return false;
+    }
+
+    if (pid == 0) {
+        dup2(fds[0], STDIN_FILENO);
+        close(fds[0]);
+        close(fds[1]);
+        int null = open("/dev/null", O_WRONLY);
+        if (null >= 0) {
+            dup2(null, STDOUT_FILENO);
+            dup2(null, STDERR_FILENO);
+            close(null);
+        }
+        execlp(cc, cc, "-std=c11", "-O2", "-w", "-x", "c", "-", "-o", output, (char *)NULL);
+        _exit(127);
+    }
+
+    close(fds[0]);
+    signal(SIGPIPE, SIG_IGN);
+    FILE *to_cc = fdopen(fds[1], "w");
+    if (to_cc == NULL) {
+        close(fds[1]);
+    } else {
+        codegen_emit(to_cc, src, prog);
+        fclose(to_cc);
+    }
+
+    int status;
+    while (waitpid(pid, &status, 0) < 0) {
+        if (errno != EINTR) {
+            fprintf(stderr, "error: lost track of %s: %s\n", cc, strerror(errno));
+            return false;
+        }
+    }
+
+    if (WIFEXITED(status) && WEXITSTATUS(status) == 0 && to_cc != NULL) {
+        return true;
+    }
+    if (WIFEXITED(status) && WEXITSTATUS(status) == 127) {
+        fprintf(stderr, "error: cannot run the C compiler '%s', set CC to one that exists\n", cc);
+    } else {
+        fprintf(stderr, "error: the C compiler '%s' rejected the generated code\n"
+                        "       run 'izvor emit %s' to see it\n", cc, path);
+    }
+    return false;
+}
+
 static void usage(void) {
     fprintf(stderr,
             "usage: izvor run <file.iz>\n"
+            "       izvor build <file.iz> [-o <output>]\n"
+            "       izvor emit <file.iz>\n"
             "       izvor -e \"<expression>\"\n");
 }
 
@@ -135,11 +221,20 @@ int main(int argc, char **argv) {
         return evaluate(argv[2]);
     }
 
+    const char *command = "run";
     const char *path = NULL;
+    const char *output = NULL;
+
     if (argc == 2 && argv[1][0] != '-') {
         path = argv[1];
-    } else if (argc == 3 && strcmp(argv[1], "run") == 0) {
+    } else if (argc == 3 && (strcmp(argv[1], "run") == 0 || strcmp(argv[1], "emit") == 0 ||
+                             strcmp(argv[1], "build") == 0)) {
+        command = argv[1];
         path = argv[2];
+    } else if (argc == 5 && strcmp(argv[1], "build") == 0 && strcmp(argv[3], "-o") == 0) {
+        command = argv[1];
+        path = argv[2];
+        output = argv[4];
     } else {
         usage();
         return 1;
@@ -151,9 +246,20 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    interp_run(src, &prog);
+    int status = 0;
+    if (strcmp(command, "run") == 0) {
+        interp_run(src, &prog);
+    } else if (strcmp(command, "emit") == 0) {
+        codegen_emit(stdout, src, &prog);
+    } else {
+        char *owned = output == NULL ? default_output(path) : NULL;
+        if (!build_binary(src, &prog, path, output != NULL ? output : owned)) {
+            status = 1;
+        }
+        free(owned);
+    }
 
     program_free(&prog);
     free(src);
-    return 0;
+    return status;
 }

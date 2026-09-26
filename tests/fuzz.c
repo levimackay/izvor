@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../src/check.h"
+#include "../src/codegen.h"
 #include "../src/parser.h"
 
 #define ITERATIONS 20000
@@ -27,10 +28,15 @@ static unsigned int next_random(void) {
 int main(void) {
     char buffer[MAX_LENGTH * 20 + 1];
     const size_t choices = sizeof pieces / sizeof pieces[0];
-    int checked = 0;
+    int compiled = 0;
 
     if (freopen("/dev/null", "w", stderr) == NULL) {
         printf("fuzz: cannot silence stderr\n");
+        return 1;
+    }
+    FILE *sink = fopen("/dev/null", "w");
+    if (sink == NULL) {
+        printf("fuzz: cannot open /dev/null\n");
         return 1;
     }
 
@@ -56,11 +62,13 @@ int main(void) {
         parser_init(&p, buffer);
         Program prog = parser_parse_program(&p);
         if (!p.had_error && check_program(buffer, &prog)) {
-            checked++;
+            codegen_emit(sink, buffer, &prog);
+            compiled++;
         }
         program_free(&prog);
     }
 
-    printf("fuzz: %d inputs, %d type checked, no crashes\n", ITERATIONS, checked);
+    fclose(sink);
+    printf("fuzz: %d inputs, %d compiled, no crashes\n", ITERATIONS, compiled);
     return 0;
 }

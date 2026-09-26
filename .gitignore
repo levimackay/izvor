@@ -3,3 +3,5 @@ build/
 *.dSYM/
 .DS_Store
 .idea/
+examples/*
+!examples/*.iz

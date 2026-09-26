@@ -1,0 +1,5 @@
+error: '+' needs Int on both sides, found Bool
+ --> tests/golden/type-mismatch.iz:2:12
+  |
+2 | print(flag + 1);
+  |            ^

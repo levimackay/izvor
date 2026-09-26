@@ -1,0 +1,4 @@
+1
+2
+error: division by zero
+ --> tests/golden/division-by-zero.iz:4:10

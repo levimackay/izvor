@@ -5,19 +5,23 @@
 #include "lexer.h"
 #include "ast.h"
 
+#define MAX_NESTING 100
+
 typedef struct {
     Lexer lexer;
+    Token previous;
     Token current;
+    bool had_error;
+    int depth;
+    int block_depth;
 } Parser;
 
 void parser_init(Parser *p, const char *src);
-
 void parser_advance(Parser *p);
-
 bool parser_check(const Parser *p, TokenType type);
-
 bool parser_match(Parser *p, TokenType type);
 
 Node *parser_parse(Parser *p);
+Program parser_parse_program(Parser *p);
 
 #endif

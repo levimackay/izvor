@@ -1,4 +1,4 @@
-error: expected ')', found EOF
+error: expected ')', found end of file
  --> tests/golden/deep-in-the-file.iz:3:9
   |
 3 |   30 / 5

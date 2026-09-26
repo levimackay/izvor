@@ -1,0 +1,14 @@
+fn f(n: Int) -> Bool {
+    return n;
+}
+
+fn g() {
+    return 1;
+}
+
+let x = g();
+while 1 {
+}
+f(1) == true;
+return 5;
+print(undefined);

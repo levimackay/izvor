@@ -2,7 +2,7 @@ CC     := clang
 CFLAGS := -std=c11 -Wall -Wextra -g -fsanitize=undefined $(EXTRA_CFLAGS)
 BUILD  := build
 
-SRC := src/lexer.c src/ast.c src/parser.c src/diag.c
+SRC := src/lexer.c src/ast.c src/parser.c src/diag.c src/check.c src/interp.c
 
 TEST_SRC := $(wildcard tests/test_*.c)
 TEST_BIN := $(patsubst tests/%.c,$(BUILD)/%,$(TEST_SRC))
@@ -40,7 +40,7 @@ golden: $(BUILD)/izvor
 	for f in $(GOLDEN); do \
 		expected="$${f%.iz}.expected"; \
 		actual="$(BUILD)/$$(basename $${f%.iz}).actual"; \
-		./$(BUILD)/izvor "$$f" > "$$actual" 2>&1 || true; \
+		./$(BUILD)/izvor run "$$f" > "$$actual" 2>&1 || true; \
 		if ! diff -u "$$expected" "$$actual"; then \
 			echo "golden: $$f does not match $$expected"; failed=1; \
 		fi; \

@@ -1,0 +1,10 @@
+error: cannot assign to 'x', it was not declared with var
+ --> tests/golden/assign-to-let.iz:2:1
+  |
+2 | x = 2;
+  | ^
+error: 'y' is Int, found Bool
+ --> tests/golden/assign-to-let.iz:4:5
+  |
+4 | y = true;
+  |     ^

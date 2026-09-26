@@ -1,0 +1,5 @@
+print(1);
+print(2);
+let zero = 0;
+print(10 / zero);
+print(3);

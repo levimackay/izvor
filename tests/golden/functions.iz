@@ -1,0 +1,40 @@
+fn fib(n: Int) -> Int {
+    if n < 2 {
+        return n;
+    }
+    return fib(n - 1) + fib(n - 2);
+}
+
+fn gcd(a: Int, b: Int) -> Int {
+    var x = a;
+    var y = b;
+    while y != 0 {
+        let r = x % y;
+        x = y;
+        y = r;
+    }
+    return x;
+}
+
+fn is_even(n: Int) -> Bool {
+    return n % 2 == 0;
+}
+
+fn report(n: Int) {
+    if is_even(n) {
+        print(n);
+        return;
+    }
+    print(-n);
+}
+
+print(fib(20));
+print(gcd(1071, 462));
+print(is_even(7));
+report(4);
+report(5);
+print(square(12));
+
+fn square(n: Int) -> Int {
+    return n * n;
+}

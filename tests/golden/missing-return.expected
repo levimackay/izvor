@@ -1,0 +1,5 @@
+error: 'sign' can reach its end without returning Int
+ --> tests/golden/missing-return.iz:1:4
+  |
+1 | fn sign(n: Int) -> Int {
+  |    ^

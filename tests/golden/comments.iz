@@ -1,0 +1,3 @@
+// izvor ignores everything after two slashes, even ∆ and é
+let answer = 42; // trailing comment
+print(answer);

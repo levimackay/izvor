@@ -1,0 +1,5 @@
+error: undefined name 'y'
+ --> tests/golden/undefined-name.iz:2:11
+  |
+2 | print(x + y);
+  |           ^

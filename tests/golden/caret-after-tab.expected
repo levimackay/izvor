@@ -1,4 +1,4 @@
-error: expected expression, found EOF
+error: expected expression, found end of file
  --> tests/golden/caret-after-tab.iz:1:11
   |
 1 |  12 * (3 +

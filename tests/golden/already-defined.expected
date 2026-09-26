@@ -1,0 +1,20 @@
+error: 'f' is already the name of a function
+ --> tests/golden/already-defined.iz:4:5
+  |
+4 | let f = 1;
+  |     ^
+error: 'x' is already defined
+ --> tests/golden/already-defined.iz:7:9
+  |
+7 |     let x = 2;
+  |         ^
+error: 'a' is already defined
+  --> tests/golden/already-defined.iz:10:14
+   |
+10 | fn g(a: Int, a: Int) {
+   |              ^
+error: function 'f' is already defined
+  --> tests/golden/already-defined.iz:13:4
+   |
+13 | fn f() {
+   |    ^

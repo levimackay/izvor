@@ -1,0 +1,6 @@
+warning: unreachable code
+ --> tests/golden/unreachable-code.iz:3:5
+  |
+3 |     print(2);
+  |     ^
+1

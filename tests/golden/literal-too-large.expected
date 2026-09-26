@@ -1,0 +1,5 @@
+error: integer literal is too large
+ --> tests/golden/literal-too-large.iz:1:7
+  |
+1 | print(99999999999999999999);
+  |       ^

@@ -1,4 +1,4 @@
-error: expected expression, found ERROR
+error: non-ASCII characters are only allowed in comments
  --> tests/golden/non-ascii.iz:1:1
   |
 1 | √2

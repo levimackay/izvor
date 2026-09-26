@@ -1,0 +1,10 @@
+error: functions can only be declared at the top level
+ --> tests/golden/misplaced.iz:2:5
+  |
+2 |     fn inner() {
+  |     ^
+error: unknown type 'String'
+ --> tests/golden/misplaced.iz:6:8
+  |
+6 | let s: String = 1;
+  |        ^

@@ -1,0 +1,5 @@
+error: 'f' is a function, call it with f(...)
+ --> tests/golden/function-as-value.iz:5:7
+  |
+5 | print(f);
+  |       ^

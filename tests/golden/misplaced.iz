@@ -1,0 +1,7 @@
+fn outer() {
+    fn inner() {
+    }
+}
+
+let s: String = 1;
+print(f);

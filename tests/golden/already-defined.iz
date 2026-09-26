@@ -1,0 +1,14 @@
+fn f() {
+}
+
+let f = 1;
+let x = 1;
+if true {
+    let x = 2;
+}
+
+fn g(a: Int, a: Int) {
+}
+
+fn f() {
+}

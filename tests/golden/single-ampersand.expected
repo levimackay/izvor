@@ -1,0 +1,5 @@
+error: unexpected character '&'
+ --> tests/golden/single-ampersand.iz:1:9
+  |
+1 | print(1 & 2);
+  |         ^

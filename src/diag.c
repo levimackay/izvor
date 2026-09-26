@@ -63,19 +63,17 @@ static void line_bounds(const char *src, long offset, long *start, long *length)
     *length = e - s;
 }
 
-void diag_error(const char *src, long offset, const char *fmt, ...) {
+static void report(const char *label, const char *src, long offset,
+                   const char *fmt, va_list args) {
     offset = at_end_of_source(src, clamp(src, offset));
 
     int line;
     int col;
     diag_line_col(src, offset, &line, &col);
 
-    va_list args;
-    va_start(args, fmt);
-    fprintf(stderr, "error: ");
+    fprintf(stderr, "%s: ", label);
     vfprintf(stderr, fmt, args);
     fputc('\n', stderr);
-    va_end(args);
 
     char number[16];
     int width = snprintf(number, sizeof number, "%d", line);
@@ -95,4 +93,32 @@ void diag_error(const char *src, long offset, const char *fmt, ...) {
     fputc('\n', stderr);
 
     fprintf(stderr, "%*s| %*s^\n", width + 1, "", col - 1, "");
+}
+
+void diag_error(const char *src, long offset, const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    report("error", src, offset, fmt, args);
+    va_end(args);
+}
+
+void diag_warning(const char *src, long offset, const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    report("warning", src, offset, fmt, args);
+    va_end(args);
+}
+
+void diag_location(const char *src, long offset, char *buffer, size_t size) {
+    int line;
+    int col;
+    diag_line_col(src, offset, &line, &col);
+    snprintf(buffer, size, "%s:%d:%d", current_path, line, col);
+}
+
+void diag_runtime_error(const char *src, long offset, const char *msg) {
+    char at[4096];
+    diag_location(src, offset, at, sizeof at);
+    fflush(stdout);
+    fprintf(stderr, "error: %s\n --> %s\n", msg, at);
 }

@@ -1,0 +1,35 @@
+error: 'f' returns Bool, found Int
+ --> tests/golden/semantic-errors.iz:2:12
+  |
+2 |     return n;
+  |            ^
+error: 'g' has no return type, so it cannot return a value
+ --> tests/golden/semantic-errors.iz:6:12
+  |
+6 |     return 1;
+  |            ^
+error: 'g' does not return a value
+ --> tests/golden/semantic-errors.iz:9:9
+  |
+9 | let x = g();
+  |         ^
+error: condition must be Bool, found Int
+  --> tests/golden/semantic-errors.iz:10:7
+   |
+10 | while 1 {
+   |       ^
+error: only a function call can be used as a statement
+  --> tests/golden/semantic-errors.iz:12:1
+   |
+12 | f(1) == true;
+   | ^
+error: return outside of a function
+  --> tests/golden/semantic-errors.iz:13:1
+   |
+13 | return 5;
+   | ^
+error: undefined name 'undefined'
+  --> tests/golden/semantic-errors.iz:14:7
+   |
+14 | print(undefined);
+   |       ^

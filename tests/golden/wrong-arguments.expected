@@ -1,0 +1,10 @@
+error: 'add' takes 2 arguments, found 3
+ --> tests/golden/wrong-arguments.iz:5:7
+  |
+5 | print(add(1, 2, 3));
+  |       ^
+error: argument 'b' of 'add' must be Int, found Bool
+ --> tests/golden/wrong-arguments.iz:6:14
+  |
+6 | print(add(1, true));
+  |              ^

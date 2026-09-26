@@ -1,4 +1,4 @@
-error: expected end of input, found ERROR
+error: unexpected character '@'
  --> tests/golden/unknown-character.iz:1:3
   |
 1 | 1 @ 2

@@ -1,0 +1,8 @@
+let t: Bool = true;
+let f = !t;
+print(t);
+print(f);
+print(t == f);
+print(t != f);
+print(1 < 2 == true);
+print(3 >= 3 && 2 <= 1);

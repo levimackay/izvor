@@ -26,7 +26,7 @@ that the checker should have stopped, that is a checker bug.
 
 | File | What it does |
 |---|---|
-| `src/lexer.c` | Characters into tokens. One character of lookahead, no backtracking. |
+| `src/lexer.c` | Characters into tokens. Two characters of lookahead, the second only to tell `//` from `/`, and no backtracking. |
 | `src/ast.c` | Tree nodes, statements, functions, and freeing all of it. |
 | `src/parser.c` | Recursive descent, one function per precedence level, with error recovery. |
 | `src/check.c` | Names, types, returns, and everything else that is wrong without being a syntax error. |
@@ -78,10 +78,13 @@ far into the left side of a new node, so `10 - 3 - 2` is 5, not 9.
 **Error recovery.** When a statement fails to parse, the parser skips
 ahead to the next `;` or the next keyword that starts a statement and
 carries on. It counts braces while it skips so it doesn't stop inside a
-block it has half read. The parser only stops at the end of the file, and
-the checker never stops early at all. Instead a broken expression gets
-the type `<error>`, and nothing complains about an `<error>`, so one
-mistake doesn't turn into ten messages.
+block it has half read, and it only stops at the end of the file. The
+checker doesn't run at all once the parser has reported an error
+(`front_end` in `src/main.c`), so a file with a syntax error shows only
+its syntax errors. Whatever the checker would find shows up on the run
+after they are fixed. When the checker does run, it never stops early. A
+broken expression gets the type `<error>`, and nothing complains about an
+`<error>`, so one mistake doesn't turn into ten messages.
 
 **Integer overflow and division by zero are errors.** C leaves both
 undefined, which means the generated program could do anything. izvor
@@ -97,6 +100,19 @@ thing in it that can print or fail, the code generator pulls the earlier
 ones into temporaries so C has no choice about the order. Most statements
 don't need that and come out as one line.
 
+**Endless loops stay endless.** C11 lets the compiler assume that a loop
+ends if its condition isn't a constant expression and the loop does no
+I/O, touches nothing `volatile`, and does no synchronization or atomic
+operations (6.8.5, paragraph 6). clang at `-O2` acts on that. A function that looped on
+`while x != 0 { x = x + 0; }` compiled to a binary that never entered the
+loop and stopped with "more than 10000 nested calls", while the
+interpreter, correctly, never finished. In izvor a loop runs until its
+condition is false, however long that takes. So the code generator writes
+every loop as `while (true)` and tests the condition with an `if` at the
+top of the body. A constant condition is the case the rule leaves out, so
+the C compiler has to keep the loop. A loop on a literal `true` or
+`false` is written as it is, since its condition is already constant.
+
 **No shadowing.** A name can't be declared again while an earlier one with
 that name is still visible, and a variable can't share a name with a
 function. Besides catching mistakes, this means every izvor name maps
@@ -106,18 +122,28 @@ izvor never has to worry about generating that.
 
 **The interpreter is the oracle.** Every golden test runs twice, once
 through the interpreter and once compiled, and both runs have to produce
-exactly the `.expected` file. The two back ends share nothing but the
-tree, so they would have to be wrong in the same way for a bug to get
-through.
+exactly the `.expected` file. Only 15 of the 36 programs get as far as
+the back ends. The other 21 stop at a compile error on purpose, so both
+of their runs print the same diagnostics from the same front end, and
+they test the error messages rather than the back ends. The back ends
+share the checked tree and the location formatting: both turn an offset
+into `file:line:col` with `diag_location`, so a mistake in the tree or in
+that formatting would show up in both runs alike. Past that they are separate code, and they
+would have to be wrong in the same way for a bug to get through.
 
 ## Testing
 
 - **Unit tests** (`tests/test_*.c`) for the lexer, the parser's helpers
-  and tree shapes, recovery, and the line and column math.
+  and tree shapes, recovery, the line and column math, and the shape of
+  the loops the code generator writes.
 - **Golden tests** (`tests/golden/`) are whole programs with their exact
   output: things that work, runtime errors, and every kind of compile
   error. An error message is a user interface, so changing one should show
   up in a diff.
+- **Endless tests** (`tests/endless/`) are programs that must never
+  finish, so they can't have an expected output. Each one is started
+  interpreted and compiled, and both have to still be running a second
+  later, when the test kills them.
 - **The fuzzer** (`tests/fuzz.c`) glues random tokens together into
   programs and pushes them through parsing, checking and code generation.
   It only checks that nothing crashes. The seed is fixed, so a failure on

@@ -63,7 +63,8 @@ static long iz_fib(long iz_n) {
 
 int main(void) {
     long iz_i = 0;
-    while (iz_i < 10) {
+    while (true) {
+        if (!(iz_i < 10)) break;
         rt_print_int(iz_fib(iz_i));
         iz_i = rt_add(iz_i, 1, "fib.iz:11:11");
     }
@@ -78,8 +79,11 @@ int main(void) {
 A few things in that C are there on purpose. Every `+` and `-` goes through a
 checked helper, because overflow in izvor stops the program and says where
 instead of quietly wrapping. `t1` exists because C doesn't promise which side
-of a `+` runs first and izvor does: left, always. And `rt_enter` counts calls,
-so runaway recursion ends with an error message rather than a segfault.
+of a `+` runs first and izvor does: left, always. `rt_enter` counts calls, so
+runaway recursion ends with an error message rather than a segfault. And the
+loop tests its condition inside `while (true)`, because C lets the compiler
+assume that a loop on any other condition ends if nothing it does can be seen
+from outside. An izvor loop runs for as long as its condition holds.
 
 | What it has today | |
 |---|---|

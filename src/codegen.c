@@ -352,13 +352,12 @@ static void emit_if(Gen *g, const Stmt *stmt) {
 
 static void emit_while(Gen *g, const Stmt *stmt) {
     const Node *cond = stmt->as.while_.cond;
-    if (!needs_temps(cond)) {
-        start_stmt(g, NULL);
+    start_stmt(g, NULL);
+    if (cond->type == NODE_BOOL) {
         fputs("while (", g->out);
         emit_expr(g, cond, false);
         fputs(") {\n", g->out);
     } else {
-        start_stmt(g, NULL);
         fputs("while (true) {\n", g->out);
         g->indent++;
         start_stmt(g, cond);

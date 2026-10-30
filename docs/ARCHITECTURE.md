@@ -97,6 +97,19 @@ thing in it that can print or fail, the code generator pulls the earlier
 ones into temporaries so C has no choice about the order. Most statements
 don't need that and come out as one line.
 
+**Endless loops stay endless.** C11 lets the compiler assume that a loop
+ends if its condition isn't a constant expression and the loop does no
+I/O, touches nothing `volatile`, and does no synchronization or atomic
+operations (6.8.5, paragraph 6). clang at `-O2` acts on that. A function that looped on
+`while x != 0 { x = x + 0; }` compiled to a binary that never entered the
+loop and stopped with "more than 10000 nested calls", while the
+interpreter, correctly, never finished. In izvor a loop runs until its
+condition is false, however long that takes. So the code generator writes
+every loop as `while (true)` and tests the condition with an `if` at the
+top of the body. A constant condition is the case the rule leaves out, so
+the C compiler has to keep the loop. A loop on a literal `true` or
+`false` is written as it is, since its condition is already constant.
+
 **No shadowing.** A name can't be declared again while an earlier one with
 that name is still visible, and a variable can't share a name with a
 function. Besides catching mistakes, this means every izvor name maps
@@ -113,11 +126,16 @@ through.
 ## Testing
 
 - **Unit tests** (`tests/test_*.c`) for the lexer, the parser's helpers
-  and tree shapes, recovery, and the line and column math.
+  and tree shapes, recovery, the line and column math, and the shape of
+  the loops the code generator writes.
 - **Golden tests** (`tests/golden/`) are whole programs with their exact
   output: things that work, runtime errors, and every kind of compile
   error. An error message is a user interface, so changing one should show
   up in a diff.
+- **Endless tests** (`tests/endless/`) are programs that must never
+  finish, so they can't have an expected output. Each one is started
+  interpreted and compiled, and both have to still be running a second
+  later, when the test kills them.
 - **The fuzzer** (`tests/fuzz.c`) glues random tokens together into
   programs and pushes them through parsing, checking and code generation.
   It only checks that nothing crashes. The seed is fixed, so a failure on

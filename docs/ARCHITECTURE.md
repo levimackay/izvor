@@ -26,7 +26,7 @@ that the checker should have stopped, that is a checker bug.
 
 | File | What it does |
 |---|---|
-| `src/lexer.c` | Characters into tokens. One character of lookahead, no backtracking. |
+| `src/lexer.c` | Characters into tokens. Two characters of lookahead, the second only to tell `//` from `/`, and no backtracking. |
 | `src/ast.c` | Tree nodes, statements, functions, and freeing all of it. |
 | `src/parser.c` | Recursive descent, one function per precedence level, with error recovery. |
 | `src/check.c` | Names, types, returns, and everything else that is wrong without being a syntax error. |
@@ -78,10 +78,13 @@ far into the left side of a new node, so `10 - 3 - 2` is 5, not 9.
 **Error recovery.** When a statement fails to parse, the parser skips
 ahead to the next `;` or the next keyword that starts a statement and
 carries on. It counts braces while it skips so it doesn't stop inside a
-block it has half read. The parser only stops at the end of the file, and
-the checker never stops early at all. Instead a broken expression gets
-the type `<error>`, and nothing complains about an `<error>`, so one
-mistake doesn't turn into ten messages.
+block it has half read, and it only stops at the end of the file. The
+checker doesn't run at all once the parser has reported an error
+(`front_end` in `src/main.c`), so a file with a syntax error shows only
+its syntax errors. Whatever the checker would find shows up on the run
+after they are fixed. When the checker does run, it never stops early. A
+broken expression gets the type `<error>`, and nothing complains about an
+`<error>`, so one mistake doesn't turn into ten messages.
 
 **Integer overflow and division by zero are errors.** C leaves both
 undefined, which means the generated program could do anything. izvor
@@ -119,9 +122,14 @@ izvor never has to worry about generating that.
 
 **The interpreter is the oracle.** Every golden test runs twice, once
 through the interpreter and once compiled, and both runs have to produce
-exactly the `.expected` file. The two back ends share nothing but the
-tree, so they would have to be wrong in the same way for a bug to get
-through.
+exactly the `.expected` file. Only 15 of the 36 programs get as far as
+the back ends. The other 21 stop at a compile error on purpose, so both
+of their runs print the same diagnostics from the same front end, and
+they test the error messages rather than the back ends. The back ends
+share the checked tree and the location formatting: both turn an offset
+into `file:line:col` with `diag_location`, so a mistake in the tree or in
+that formatting would show up in both runs alike. Past that they are separate code, and they
+would have to be wrong in the same way for a bug to get through.
 
 ## Testing
 

@@ -14,8 +14,9 @@ are an error rather than a silent overflow.
 level. Statements, blocks, functions, calls, and recovery after errors.
 Nesting past 100 levels is an error instead of a stack overflow.
 
-**Variables and statements.** `let`, `var`, assignment, `print`, and
-programs that are a list of statements.
+**Variables and statements.** `let`, `var`, assignment, compound
+assignment (`+=` and friends), `print`, and programs that are a list of
+statements.
 
 **Types.** `Int` and `Bool`, inferred from the value or written out, and
 checked everywhere they meet.
@@ -64,6 +65,5 @@ automatically. These are the stretch goals and they come last on purpose.
 
 - `break` and `continue`. The checker would need to know it's inside a
   loop, and `while true` would stop counting as a loop that never ends.
-- Compound assignment (`+=` and friends).
 - Count columns in characters instead of bytes once names can be
   non-ASCII.

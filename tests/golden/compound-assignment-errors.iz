@@ -1,0 +1,5 @@
+let k = 1;
+k += 1;
+var b = true;
+b *= 2;
+missing -= 1;

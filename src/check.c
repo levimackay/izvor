@@ -231,12 +231,14 @@ static bool check_stmt(Checker *c, Stmt *stmt) {
         Name name = stmt->as.assign.name;
         Type type = check_value(c, stmt->as.assign.value);
         Local *local = find_local(c, name);
+        bool compound = stmt->as.assign.compound;
         if (local == NULL) {
-            error(c, stmt->offset, "undefined name '%.*s'", name.length, name.start);
+            if (!compound) error(c, stmt->offset, "undefined name '%.*s'", name.length, name.start);
         } else if (!local->mutable) {
             error(c, stmt->offset, "cannot assign to '%.*s', it was not declared with var",
                   name.length, name.start);
-        } else if (local->type != TYPE_ERROR && type != TYPE_ERROR && type != local->type) {
+        } else if (!compound && local->type != TYPE_ERROR && type != TYPE_ERROR &&
+                   type != local->type) {
             error(c, start_of(stmt->as.assign.value), "'%.*s' is %s, found %s",
                   name.length, name.start, type_name(local->type), type_name(type));
         }

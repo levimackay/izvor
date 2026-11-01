@@ -1,0 +1,21 @@
+var x = 10;
+x += 5;
+x -= 3;
+x *= 4;
+x /= 5;
+x %= 7;
+print(x);
+
+var total = 0;
+var i = 1;
+while i <= 10 {
+    total += i * i;
+    i += 1;
+}
+print(total);
+
+var big = 9223372036854775807;
+big -= 1;
+print(big);
+big += 2;
+print(big);

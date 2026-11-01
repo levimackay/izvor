@@ -37,6 +37,12 @@ int main(void) {
     };
     expect_types("== = != ! <= < >= > -> - && ||", pairs);
 
+    TokenType compound[] = {
+        TOK_PLUS_EQUAL, TOK_MINUS_EQUAL, TOK_STAR_EQUAL, TOK_SLASH_EQUAL, TOK_PERCENT_EQUAL,
+        TOK_MINUS, TOK_ARROW, TOK_MINUS_EQUAL, TOK_SLASH_EQUAL, TOK_NUMBER, TOK_EOF
+    };
+    expect_types("+= -= *= /= %= - -> -= /=2 // /=", compound);
+
     TokenType punctuation[] = {
         TOK_LBRACE, TOK_RBRACE, TOK_COMMA, TOK_COLON, TOK_SEMICOLON, TOK_PERCENT, TOK_EOF
     };
@@ -62,6 +68,7 @@ int main(void) {
 
     assert(strcmp(token_type_name(TOK_ARROW), "ARROW") == 0);
     assert(strcmp(token_type_name(TOK_IDENT), "IDENT") == 0);
+    assert(strcmp(token_type_name(TOK_PERCENT_EQUAL), "PERCENT_EQUAL") == 0);
 
     printf("test_lexer_5 passed\n");
     return 0;

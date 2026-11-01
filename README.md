@@ -6,7 +6,7 @@
   <a href="https://github.com/levimackay/izvor/actions/workflows/ci.yml"><img src="https://github.com/levimackay/izvor/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
   <img src="https://img.shields.io/badge/written_in-C11-4fd1c5?style=flat-square" alt="written in C11">
   <img src="https://img.shields.io/badge/dependencies-none-4fd1c5?style=flat-square" alt="no dependencies">
-  <img src="https://img.shields.io/badge/tests-36_programs,_both_ways-b39ddb?style=flat-square" alt="36 golden programs, interpreted and compiled">
+  <img src="https://img.shields.io/badge/tests-38_programs,_both_ways-b39ddb?style=flat-square" alt="38 golden programs, interpreted and compiled">
   <img src="https://img.shields.io/badge/license-MIT-8b949c?style=flat-square" alt="MIT license">
 </p>
 
@@ -84,7 +84,7 @@ so runaway recursion ends with an error message rather than a segfault.
 | What it has today | |
 |---|---|
 | **Types** | `Int` (64-bit, signed) and `Bool`, inferred or written out: `let age: Int = 22;` |
-| **Bindings** | `let` never changes, `var` can. No shadowing, so a name always means one thing. |
+| **Bindings** | `let` never changes, `var` can, with `=` or `+= -= *= /= %=`. No shadowing, so a name always means one thing. |
 | **Functions** | Typed parameters, optional return type, recursion, callable before they're declared |
 | **Control flow** | `if` / `else if` / `else`, `while`, `return` |
 | **Operators** | `+ - * / %`, comparisons, `== !=`, and `&& \|\| !` with short-circuiting |
@@ -106,7 +106,7 @@ compiled.
 ## Two back ends, one answer
 
 <p align="center">
-  <img src="docs/img/tests.svg" width="100%" alt="All 36 golden test programs, each with two passing marks: one for the interpreter and one for the compiled binary.">
+  <img src="docs/img/tests.svg" width="100%" alt="The golden test programs, each with two passing marks: one for the interpreter and one for the compiled binary.">
 </p>
 
 Every program in [`tests/golden`](tests/golden) has its exact output checked
@@ -177,7 +177,7 @@ guessed are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ```sh
 make                                   # build the compiler
-make test                              # 36 programs, interpreted and compiled
+make test                              # 38 programs, interpreted and compiled
 ./build/izvor run examples/collatz.iz  # interpret
 ./build/izvor build examples/fib.iz    # native binary at examples/fib
 ./build/izvor emit examples/fib.iz     # read the C it writes

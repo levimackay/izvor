@@ -35,6 +35,16 @@ const char *token_type_name(TokenType type) {
         return "ARROW";
     case TOK_EQUAL:
         return "EQUAL";
+    case TOK_PLUS_EQUAL:
+        return "PLUS_EQUAL";
+    case TOK_MINUS_EQUAL:
+        return "MINUS_EQUAL";
+    case TOK_STAR_EQUAL:
+        return "STAR_EQUAL";
+    case TOK_SLASH_EQUAL:
+        return "SLASH_EQUAL";
+    case TOK_PERCENT_EQUAL:
+        return "PERCENT_EQUAL";
     case TOK_EQUAL_EQUAL:
         return "EQUAL_EQUAL";
     case TOK_BANG:
@@ -194,10 +204,6 @@ Token lexer_next(Lexer *lx) {
 
     advance(lx);
     switch (c) {
-    case '+': return make_token(lx, TOK_PLUS,      start);
-    case '*': return make_token(lx, TOK_STAR,      start);
-    case '/': return make_token(lx, TOK_SLASH,     start);
-    case '%': return make_token(lx, TOK_PERCENT,   start);
     case '(': return make_token(lx, TOK_LPAREN,    start);
     case ')': return make_token(lx, TOK_RPAREN,    start);
     case '{': return make_token(lx, TOK_LBRACE,    start);
@@ -205,8 +211,17 @@ Token lexer_next(Lexer *lx) {
     case ',': return make_token(lx, TOK_COMMA,     start);
     case ':': return make_token(lx, TOK_COLON,     start);
     case ';': return make_token(lx, TOK_SEMICOLON, start);
+    case '+':
+        return make_token(lx, match(lx, '=') ? TOK_PLUS_EQUAL : TOK_PLUS, start);
+    case '*':
+        return make_token(lx, match(lx, '=') ? TOK_STAR_EQUAL : TOK_STAR, start);
+    case '/':
+        return make_token(lx, match(lx, '=') ? TOK_SLASH_EQUAL : TOK_SLASH, start);
+    case '%':
+        return make_token(lx, match(lx, '=') ? TOK_PERCENT_EQUAL : TOK_PERCENT, start);
     case '-':
-        return make_token(lx, match(lx, '>') ? TOK_ARROW : TOK_MINUS, start);
+        if (match(lx, '>')) return make_token(lx, TOK_ARROW, start);
+        return make_token(lx, match(lx, '=') ? TOK_MINUS_EQUAL : TOK_MINUS, start);
     case '=':
         return make_token(lx, match(lx, '=') ? TOK_EQUAL_EQUAL : TOK_EQUAL, start);
     case '!':

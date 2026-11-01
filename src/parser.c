@@ -426,24 +426,43 @@ fail:
     return NULL;
 }
 
+static TokenType compound_op(TokenType type) {
+    switch (type) {
+    case TOK_PLUS_EQUAL: return TOK_PLUS;
+    case TOK_MINUS_EQUAL: return TOK_MINUS;
+    case TOK_STAR_EQUAL: return TOK_STAR;
+    case TOK_SLASH_EQUAL: return TOK_SLASH;
+    case TOK_PERCENT_EQUAL: return TOK_PERCENT;
+    default: return TOK_EOF;
+    }
+}
+
 static Stmt *parse_simple(Parser *p) {
     long offset = offset_of(p, p->current);
     Node *expr = parse_expression(p);
     if (expr == NULL) return NULL;
 
     Stmt *stmt;
-    if (parser_check(p, TOK_EQUAL)) {
+    TokenType op = compound_op(p->current.type);
+    if (parser_check(p, TOK_EQUAL) || op != TOK_EOF) {
         if (expr->type != NODE_NAME) {
             error_here(p, offset, "only a variable can be assigned to");
             ast_free(expr);
             return NULL;
         }
+        Token assign = p->current;
         parser_advance(p);
         stmt = stmt_new(STMT_ASSIGN, offset);
         stmt->as.assign.name = expr->as.name;
-        ast_free(expr);
-        stmt->as.assign.value = parse_expression(p);
-        if (stmt->as.assign.value == NULL) goto fail;
+        stmt->as.assign.compound = op != TOK_EOF;
+        Node *value = parse_expression(p);
+        if (op == TOK_EOF || value == NULL) {
+            ast_free(expr);
+        } else {
+            value = limit(p, ast_binary(offset_of(p, assign), op, expr, value));
+        }
+        stmt->as.assign.value = value;
+        if (value == NULL) goto fail;
     } else {
         stmt = stmt_new(STMT_EXPR, offset);
         stmt->as.expr = expr;

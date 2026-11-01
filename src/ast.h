@@ -83,6 +83,7 @@ struct Stmt {
         struct {
             Name name;
             Node *value;
+            bool compound;
         } assign;
         struct {
             Node *cond;

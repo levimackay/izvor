@@ -1,0 +1,15 @@
+error: cannot assign to 'k', it was not declared with var
+ --> tests/golden/compound-assignment-errors.iz:2:1
+  |
+2 | k += 1;
+  | ^
+error: '*' needs Int on both sides, found Bool
+ --> tests/golden/compound-assignment-errors.iz:4:3
+  |
+4 | b *= 2;
+  |   ^
+error: undefined name 'missing'
+ --> tests/golden/compound-assignment-errors.iz:5:1
+  |
+5 | missing -= 1;
+  | ^

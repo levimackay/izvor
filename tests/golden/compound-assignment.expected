@@ -1,0 +1,5 @@
+2
+385
+9223372036854775806
+error: integer overflow
+ --> tests/golden/compound-assignment.iz:20:5

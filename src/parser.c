@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include "diag.h"
@@ -145,6 +146,10 @@ static Node *parse_atom(Parser *p) {
 
     switch (t.type) {
     case TOK_NUMBER:
+        if (t.value == LONG_MIN) {
+            error_here(p, offset, "integer literal is too large");
+            return NULL;
+        }
         parser_advance(p);
         return ast_number(offset, t.value);
     case TOK_TRUE:
@@ -178,6 +183,11 @@ static Node *parse_factor(Parser *p) {
     if (parser_check(p, TOK_MINUS) || parser_check(p, TOK_BANG)) {
         Token op = p->current;
         parser_advance(p);
+        if (op.type == TOK_MINUS && parser_check(p, TOK_NUMBER) && p->current.value == LONG_MIN) {
+            parser_advance(p);
+            p->depth--;
+            return ast_number(offset_of(p, op), LONG_MIN);
+        }
         Node *operand = parse_factor(p);
         node = operand == NULL ? NULL : limit(p, ast_unary(offset_of(p, op), op.type, operand));
     } else {

@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 #include "../src/lexer.h"
@@ -58,7 +59,11 @@ int main(void) {
     t = lexer_next(&lx);
     assert(t.type == TOK_NUMBER && t.value == 9223372036854775807L);
 
-    const char *big = "9223372036854775808 1";
+    lexer_init(&lx, "9223372036854775808");
+    t = lexer_next(&lx);
+    assert(t.type == TOK_NUMBER && t.value == LONG_MIN && t.length == 19);
+
+    const char *big = "9223372036854775809 1";
     lexer_init(&lx, big);
     t = lexer_next(&lx);
     assert(t.type == TOK_ERROR);

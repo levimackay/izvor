@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include "codegen.h"
@@ -168,10 +169,16 @@ static bool short_circuits(const Node *node) {
            (node->as.binary.op == TOK_AND || node->as.binary.op == TOK_OR);
 }
 
+static bool negates_literal(const Node *node) {
+    const Node *operand = node->as.unary.operand;
+    return node->as.unary.op == TOK_MINUS && operand->type == NODE_NUMBER &&
+           operand->as.number != LONG_MIN;
+}
+
 static bool has_effects(const Node *node) {
     if (node->type == NODE_CALL) return true;
     if (node->type == NODE_UNARY && node->as.unary.op == TOK_MINUS &&
-        node->as.unary.operand->type != NODE_NUMBER) return true;
+        !negates_literal(node)) return true;
     if (node->type == NODE_BINARY && helper_for(node->as.binary.op) != NULL) return true;
 
     for (int i = 0; i < operand_count(node); i++) {
@@ -284,7 +291,11 @@ static void emit_expr(Gen *g, const Node *node, bool nested) {
 
     switch (node->type) {
     case NODE_NUMBER:
-        fprintf(g->out, "%ld", node->as.number);
+        if (node->as.number == LONG_MIN) {
+            fputs("LONG_MIN", g->out);
+        } else {
+            fprintf(g->out, "%ld", node->as.number);
+        }
         break;
     case NODE_BOOL:
         fputs(node->as.boolean ? "true" : "false", g->out);
@@ -296,7 +307,7 @@ static void emit_expr(Gen *g, const Node *node, bool nested) {
         if (node->as.unary.op == TOK_BANG) {
             fputc('!', g->out);
             emit_expr(g, node->as.unary.operand, true);
-        } else if (node->as.unary.operand->type == NODE_NUMBER) {
+        } else if (negates_literal(node)) {
             fprintf(g->out, "-%ld", node->as.unary.operand->as.number);
         } else {
             fputs("rt_neg(", g->out);

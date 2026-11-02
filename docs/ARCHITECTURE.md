@@ -148,10 +148,6 @@ limit of 256.
 and a comment runs to the end of its line, so the only error that can
 land after one on the same line is an unexpected end of file.
 
-**The most negative Int can't be written as a literal.**
-`-9223372036854775808` is a minus sign applied to a number that doesn't
-fit. `-9223372036854775807 - 1` works.
-
 **`build` hides the C compiler's output.** If `cc` rejects the generated
 code, that's a bug in izvor, and `izvor emit` is how to look at what it
 was given.

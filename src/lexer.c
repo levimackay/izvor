@@ -174,16 +174,17 @@ static TokenType classify(const char *start, int length) {
 }
 
 static Token number(Lexer *lx, int start) {
-    long value = 0;
+    const unsigned long limit = (unsigned long)LONG_MAX + 1;
+    unsigned long value = 0;
     int too_big = 0;
     while (is_digit(peek(lx))) {
-        int digit = advance(lx) - '0';
-        if (value > (LONG_MAX - digit) / 10) too_big = 1;
+        unsigned long digit = (unsigned long)(advance(lx) - '0');
+        if (value > (limit - digit) / 10) too_big = 1;
         if (!too_big) value = value * 10 + digit;
     }
     if (too_big) return make_token(lx, TOK_ERROR, start);
     Token t = make_token(lx, TOK_NUMBER, start);
-    t.value = value;
+    t.value = value == limit ? LONG_MIN : (long)value;
     return t;
 }
 

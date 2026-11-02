@@ -7,8 +7,9 @@ SRC := src/lexer.c src/ast.c src/parser.c src/diag.c src/check.c src/interp.c sr
 TEST_SRC := $(wildcard tests/test_*.c)
 TEST_BIN := $(patsubst tests/%.c,$(BUILD)/%,$(TEST_SRC))
 GOLDEN   := $(wildcard tests/golden/*.iz)
+ENDLESS  := $(wildcard tests/endless/*.iz)
 
-.PHONY: all izvor lexdump test golden fuzz asan clean
+.PHONY: all izvor lexdump test golden endless fuzz asan clean
 
 all: $(BUILD)/izvor $(BUILD)/lexdump
 
@@ -27,7 +28,7 @@ $(BUILD)/test_%: tests/test_%.c $(SRC) | $(BUILD)
 $(BUILD)/fuzz: tests/fuzz.c $(SRC) | $(BUILD)
 	$(CC) $(CFLAGS) $^ -o $@
 
-test: $(TEST_BIN) golden
+test: $(TEST_BIN) golden endless
 	@failed=0; \
 	for t in $(TEST_BIN); do \
 		if ! ./$$t; then failed=1; fi; \
@@ -55,6 +56,29 @@ golden: $(BUILD)/izvor
 	done; \
 	if [ $$failed -ne 0 ]; then exit 1; fi; \
 	echo "golden: $(words $(GOLDEN)) cases match, interpreted and compiled"
+
+endless: $(BUILD)/izvor
+	@failed=0; \
+	for f in $(ENDLESS); do \
+		name="$$(basename $${f%.iz})"; \
+		if ! ./$(BUILD)/izvor build "$$f" -o "$(BUILD)/$$name.endless"; then \
+			echo "endless: izvor build $$f failed"; failed=1; continue; \
+		fi; \
+		./$(BUILD)/izvor run "$$f" > /dev/null 2>&1 & run=$$!; \
+		./$(BUILD)/$$name.endless > /dev/null 2>&1 & built=$$!; \
+		sleep 1; \
+		kill $$run $$built 2> /dev/null; \
+		wait $$run 2> /dev/null; status=$$?; \
+		if [ $$status -le 128 ] || [ "$$(kill -l $$status)" != TERM ]; then \
+			echo "endless: izvor run $$f exited with $$status before it was killed"; failed=1; \
+		fi; \
+		wait $$built 2> /dev/null; status=$$?; \
+		if [ $$status -le 128 ] || [ "$$(kill -l $$status)" != TERM ]; then \
+			echo "endless: the compiled $$f exited with $$status before it was killed"; failed=1; \
+		fi; \
+	done; \
+	if [ $$failed -ne 0 ]; then exit 1; fi; \
+	echo "endless: every case ran until it was killed, interpreted and compiled"
 
 fuzz: $(BUILD)/fuzz
 	./$(BUILD)/fuzz

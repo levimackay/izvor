@@ -1,0 +1,4 @@
+14
+4
+error: division by zero
+ --> tests/golden/compound-division-by-zero.iz:7:3

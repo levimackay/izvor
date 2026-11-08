@@ -1,0 +1,8 @@
+var x = 100;
+x /= 7;
+print(x);
+x %= 5;
+print(x);
+let zero = 0;
+x %= zero;
+print(x);

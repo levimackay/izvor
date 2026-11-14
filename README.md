@@ -10,8 +10,8 @@
   <img src="https://img.shields.io/badge/license-MIT-8b949c?style=flat-square" alt="MIT license">
 </p>
 
-**izvor** is a small statically typed programming language and the compiler
-for it, written in C11 with nothing underneath but a C compiler. It reads a
+**izvor** is a small statically typed programming language and the compiler for it,
+written in C11 with nothing underneath but a C compiler. It reads a
 program, gives every expression a type, and then either runs it on the spot
 or writes it out as C and hands that to `cc` for a native binary.
 

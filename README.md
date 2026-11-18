@@ -10,8 +10,8 @@
   <img src="https://img.shields.io/badge/license-MIT-8b949c?style=flat-square" alt="MIT license">
 </p>
 
-**izvor** is a small statically typed programming language and the compiler
-for it, written in C11 with nothing underneath but a C compiler. It reads a
+**izvor** is a small statically typed programming language and the compiler for it,
+written in C11 with nothing underneath but a C compiler. It reads a
 program, gives every expression a type, and then either runs it on the spot
 or writes it out as C and hands that to `cc` for a native binary.
 
@@ -191,15 +191,6 @@ make test                              # 40 programs, interpreted and compiled
 Arrays, structs and strings, with the small runtime they need. After that,
 `parallel` blocks where sharing mutable state is a compile error instead of a
 race. The plan is in [docs/ROADMAP.md](docs/ROADMAP.md).
-
-## The IDE
-
-<a href="https://github.com/levimackay/izvor-studio"><img src="https://raw.githubusercontent.com/levimackay/izvor-studio/main/docs/hero-workspace.jpg" width="100%" alt="Izvor Studio, a design prototype of an IDE for izvor"></a>
-
-There's a design prototype of an IDE for izvor,
-[Izvor Studio](https://github.com/levimackay/izvor-studio). It was designed
-with Claude Design, and it shows where the tooling could go rather than
-anything that exists yet.
 
 ## Layout
 

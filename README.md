@@ -6,7 +6,7 @@
   <a href="https://github.com/levimackay/izvor/actions/workflows/ci.yml"><img src="https://github.com/levimackay/izvor/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
   <img src="https://img.shields.io/badge/written_in-C11-4fd1c5?style=flat-square" alt="written in C11">
   <img src="https://img.shields.io/badge/dependencies-none-4fd1c5?style=flat-square" alt="no dependencies">
-  <img src="https://img.shields.io/badge/tests-40_programs,_both_ways-b39ddb?style=flat-square" alt="40 golden programs, interpreted and compiled">
+  <img src="https://img.shields.io/badge/tests-41_programs,_both_ways-b39ddb?style=flat-square" alt="41 golden programs, interpreted and compiled">
   <img src="https://img.shields.io/badge/license-MIT-8b949c?style=flat-square" alt="MIT license">
 </p>
 
@@ -143,12 +143,12 @@ source ─▶ lexer ─▶ parser ─▶ checker ─┬─▶ interpreter       
 
 | Stage | File | Lines | What it does |
 |---|---|---:|---|
-| Lexer | [`lexer.c`](src/lexer.c) | 286 | Characters to tokens. One character of lookahead, never backtracks. |
-| Parser | [`parser.c`](src/parser.c) | 576 | Recursive descent, one function per precedence level, recovers after errors. |
-| Tree | [`ast.c`](src/ast.c) | 335 | Tagged unions for expressions and statements, and freeing all of it. |
-| Checker | [`check.c`](src/check.c) | 386 | Names, types, returns, arity, dead code. Reports everything it finds. |
+| Lexer | [`lexer.c`](src/lexer.c) | 307 | Characters to tokens. One character of lookahead, never backtracks. |
+| Parser | [`parser.c`](src/parser.c) | 605 | Recursive descent, one function per precedence level, recovers after errors. |
+| Tree | [`ast.c`](src/ast.c) | 336 | Tagged unions for expressions and statements, and freeing all of it. |
+| Checker | [`check.c`](src/check.c) | 388 | Names, types, returns, arity, dead code. Reports everything it finds. |
 | Interpreter | [`interp.c`](src/interp.c) | 251 | Walks the checked tree. The reference the compiled output has to match. |
-| Code generator | [`codegen.c`](src/codegen.c) | 488 | Writes readable C and pins down evaluation order. |
+| Code generator | [`codegen.c`](src/codegen.c) | 499 | Writes readable C and pins down evaluation order. |
 | Diagnostics | [`diag.c`](src/diag.c) | 144 | The single definition of what an error looks like. |
 | Driver | [`main.c`](src/main.c) | 265 | `run`, `build`, `emit`, `-e`, and piping C into `cc`. |
 
@@ -177,7 +177,7 @@ guessed are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ```sh
 make                                   # build the compiler
-make test                              # 40 programs, interpreted and compiled
+make test                              # 41 programs, interpreted and compiled
 ./build/izvor run examples/collatz.iz  # interpret
 ./build/izvor build examples/fib.iz    # native binary at examples/fib
 ./build/izvor emit examples/fib.iz     # read the C it writes
